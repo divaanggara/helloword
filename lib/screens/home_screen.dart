@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'data_menu.dart';
 import 'cart_screen.dart';
 import 'detail_screen.dart';
-import 'riwayat_screen.dart'; // Tambahan import untuk halaman riwayat
+import 'riwayat_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -39,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+
   void _filterByCategory(String title, List<Map<String, String>> items) {
     setState(() {
       isSearching = true;
@@ -46,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _searchController.text = title; 
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,8 +57,23 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
+        toolbarHeight: 90, // Tinggi AppBar diperbesar agar avatar pas
         title: Column(
           children: [
+            // --- AVATAR USER DENGAN BORDER ---
+            Container(
+              margin: const EdgeInsets.only(bottom: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.orange, width: 2), // Warna & tebal border
+              ),
+              child: const CircleAvatar(
+                radius: 16, 
+                backgroundColor: Color(0xFFF0F0F0),
+                child: Icon(Icons.person, color: Colors.grey, size: 20),
+              ),
+            ),
+            // ---------------------------------
             const Text('Welcome back,', style: TextStyle(color: Colors.grey, fontSize: 11)),
             Text(widget.username.toUpperCase(), style: const TextStyle(color: Color(0xFF4A1C1C), fontWeight: FontWeight.bold, fontSize: 16)),
           ],
@@ -167,7 +184,6 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               GestureDetector(
-                // Pas diklik, yang dipanggil tetap FULL 'items'
                 onTap: () => _filterByCategory(title, items),
                 child: const Text("Lihat Semua", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
               ),
@@ -179,7 +195,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.only(left: 20),
-            // Tampilkan cuma yang 5 produk tadi
             itemCount: menuUnggulan.length, 
             itemBuilder: (context, index) => _buildItemCard(menuUnggulan[index]),
           ),
@@ -187,6 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
   Widget _buildItemCard(Map<String, String> item) {
     return Container(
       width: 200,
