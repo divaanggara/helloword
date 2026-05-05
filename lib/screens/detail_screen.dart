@@ -7,6 +7,27 @@ class DetailScreen extends StatelessWidget {
 
   const DetailScreen({super.key, required this.item});
 
+  // FUNGSI PINTAR: Deteksi apakah ini Asset atau Link Internet
+  Widget _buildImage(String imagePath) {
+    if (imagePath.startsWith('http') || imagePath.startsWith('https')) {
+      return Image.network(
+        imagePath,
+        width: double.infinity,
+        height: 400,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, size: 50)),
+      );
+    } else {
+      return Image.asset(
+        imagePath,
+        width: double.infinity,
+        height: 400,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.fastfood, size: 50, color: Colors.orange)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,17 +40,12 @@ class DetailScreen extends StatelessWidget {
             Stack(
               children: [
                 Hero(
-                  tag: item['name']!, // Animasi nyambung dari HomeScreen
+                  tag: item['name']!, 
                   child: ClipRRect(
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(50),
                     ),
-                    child: Image.network(
-                      item['img']!,
-                      width: double.infinity,
-                      height: 400,
-                      fit: BoxFit.cover,
-                    ),
+                    child: _buildImage(item['img']!), // PAKAI FUNGSI PINTAR DI SINI
                   ),
                 ),
                 // Tombol Back
@@ -95,7 +111,7 @@ class DetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "Nikmati sensasi kelezatan ${item['name']} yang dibuat dengan resep rahasia turun temurun. Menggunakan bahan-bahan yang selalu segar setiap harinya untuk memastikan kualitas rasa yang maksimal di setiap suapan. Cocok untuk menemani waktu santai atau makan siang Anda bersama teman dan keluarga.",
+                    "Nikmati sensasi kelezatan ${item['name']} yang dibuat dengan resep rahasia turun temurun. Menggunakan bahan-bahan yang selalu segar setiap harinya untuk memastikan kualitas rasa yang maksimal di setiap suapan.",
                     style: TextStyle(fontSize: 15, color: Colors.grey[600], height: 1.6),
                   ),
                   const SizedBox(height: 30),

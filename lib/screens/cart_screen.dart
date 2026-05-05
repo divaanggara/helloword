@@ -10,17 +10,31 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  String _hitungTotal() {
-    int total = 0;
-    for (var item in isiKeranjang) {
-      int harga = int.parse(item['price'].replaceAll('Rp ', '').replaceAll('.', ''));
-      total += harga * (item['qty'] as int);
-    }
-    return "Rp ${total.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}";
+  
+  // Fungsi pembersih harga
+  int _parseHarga(String harga) {
+    return int.parse(harga.replaceAll('Rp ', '').replaceAll('.', ''));
+  }
+
+  // Fungsi format rupiah
+  String _formatRupiah(int nominal) {
+    return "Rp ${nominal.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}";
   }
 
   @override
   Widget build(BuildContext context) {
+    // 1. HITUNG SUBOTOTAL (Harga Asli)
+    int subtotal = 0;
+    for (var item in isiKeranjang) {
+      subtotal += _parseHarga(item['price']) * (item['qty'] as int);
+    }
+
+    // 2. HITUNG POTONGAN (Ambil dari data_menu.dart)
+    int potongan = (subtotal * diskonAktif).toInt();
+
+    // 3. HITUNG TOTAL AKHIR
+    int totalBayar = subtotal - potongan;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Keranjang Saya", style: TextStyle(color: Colors.black)), 
@@ -39,38 +53,24 @@ class _CartScreenState extends State<CartScreen> {
                     final item = isiKeranjang[index];
                     return ListTile(
                       leading: item['img'].toString().startsWith('assets') 
-                          ? Image.asset(item['img'], width: 50, height: 50, fit: BoxFit.cover, errorBuilder: (c,e,s) => const Icon(Icons.image))
-                          : Image.network(item['img'], width: 50, height: 50, fit: BoxFit.cover, errorBuilder: (c,e,s) => const Icon(Icons.image)),
+                          ? Image.asset(item['img'], width: 50, height: 50, fit: BoxFit.cover)
+                          : Image.network(item['img'], width: 50, height: 50, fit: BoxFit.cover),
                       title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(item['price'], style: const TextStyle(color: Colors.green)),
-                      
-                      // INI YANG DIUBAH: Mengganti tombol delete dengan tombol + dan -
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                if (item['qty'] > 1) {
-                                  item['qty']--; // Kurangi jumlah
-                                } else {
-                                  isiKeranjang.removeAt(index); // Hapus kalau sisa 1 dan dikurangi
-                                }
-                              });
-                            },
+                            onPressed: () => setState(() {
+                              if (item['qty'] > 1) item['qty']--;
+                              else isiKeranjang.removeAt(index);
+                            }),
                           ),
-                          Text(
-                            '${item['qty']}', 
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
-                          ),
+                          Text('${item['qty']}', style: const TextStyle(fontWeight: FontWeight.bold)),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline, color: Colors.green),
-                            onPressed: () {
-                              setState(() {
-                                item['qty']++; // Tambah jumlah
-                              });
-                            },
+                            onPressed: () => setState(() => item['qty']++),
                           ),
                         ],
                       ),
@@ -78,6 +78,8 @@ class _CartScreenState extends State<CartScreen> {
                   },
                 ),
               ),
+              
+              // PANEL RINCIAN BAYAR
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
@@ -87,11 +89,23 @@ class _CartScreenState extends State<CartScreen> {
                 ),
                 child: Column(
                   children: [
+                    // Subtotal
+                    _rowDetail("Subtotal", _formatRupiah(subtotal), Colors.black),
+                    
+                    // Promo (Hanya muncul jika diskonAktif > 0)
+                    if (diskonAktif > 0) ...[
+                      const SizedBox(height: 5),
+                      _rowDetail("Promo: $namaPromoAktif", "- ${_formatRupiah(potongan)}", Colors.red),
+                    ],
+                    
+                    const Divider(height: 25),
+                    
+                    // Total Bayar
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween, 
                       children: [
                         const Text("Total Bayar", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), 
-                        Text(_hitungTotal(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.orange))
+                        Text(_formatRupiah(totalBayar), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.orange))
                       ]
                     ),
                     const SizedBox(height: 20),
@@ -99,14 +113,9 @@ class _CartScreenState extends State<CartScreen> {
                       width: double.infinity, 
                       height: 50, 
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const CheckoutScreen()));
-                        }, 
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange, 
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
-                        ), 
-                        child: const Text("LANJUT PENGIRIMAN & BAYAR", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CheckoutScreen())), 
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange), 
+                        child: const Text("LANJUT PENGIRIMAN & BAYAR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
                       )
                     ),
                   ],
@@ -114,6 +123,17 @@ class _CartScreenState extends State<CartScreen> {
               )
             ],
           ),
+    );
+  }
+
+  // Widget kecil untuk baris rincian
+  Widget _rowDetail(String label, String nilai, Color warna) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: warna)),
+        Text(nilai, style: TextStyle(color: warna, fontWeight: FontWeight.bold)),
+      ],
     );
   }
 }

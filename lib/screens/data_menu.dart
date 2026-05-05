@@ -35,7 +35,7 @@ List<Map<String, String>> dataMakanan = [
   {"name": "Iga Bakar", "price": "Rp 45.000", "img": "assets/images/iga_bakar.jpg"},
   {"name": "Nasi Kuning", "price": "Rp 15.000", "img": "assets/images/nasi_kuning.jpg"},
   {"name": "Ayam Geprek Level 5", "price": "Rp 15.000", "img": "assets/images/ayam_geprek.jpg"},
-  {"name": "Capcay Seafood", "price": "Rp 20.000", "img": "assets/images/capcay.jpg"},
+  {"name": "Capcay Seafood", "price": "Rp 20.000", "img": "assets/images/Capcay Seafood.jpg"},
   {"name": "Sapo Tahu", "price": "Rp 22.000", "img": "assets/images/sapo_tahu.jpg"},
 ];
 
@@ -55,7 +55,7 @@ List<Map<String, String>> dataMinuman = [
   {"name": "Lemon Tea", "price": "Rp 10.000", "img": "assets/images/lemon_tea.jpg"},
   {"name": "Soda Gembira", "price": "Rp 15.000", "img": "assets/images/soda_gembira.jpg"},
   {"name": "Milo Dinosaur", "price": "Rp 12.000", "img": "assets/images/milo.jpg"},
-  {"name": "Cappuccino Ice", "price": "Rp 15.000", "img": "assets/images/cappuccino.jpg"},
+  {"name": "Cappuccino Ice", "price": "Rp 15.000", "img": "assets/images/Cappuccino Ice.jpg"},
   {"name": "Es Cincau Hijau", "price": "Rp 8.000", "img": "assets/images/es_cincau.jpg"},
   {"name": "Es Doger", "price": "Rp 10.000", "img": "assets/images/es_doger.jpg"},
   {"name": "Es Pisang Ijo", "price": "Rp 15.000", "img": "assets/images/es_pisang_ijo.jpg"},
@@ -112,3 +112,6 @@ List<Map<String, String>> dataCemilan = [
 ];
 
 List<Map<String, dynamic>> riwayatPesanan = [];
+List<Map<String, dynamic>> keranjangBelanja = [];
+double diskonAktif = 0.0; 
+String namaPromoAktif = "";
