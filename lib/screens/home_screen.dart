@@ -3,10 +3,10 @@ import 'data_menu.dart';
 import 'cart_screen.dart';
 import 'detail_screen.dart';
 import 'riwayat_screen.dart';
-// Ini import untuk layar fitur yang baru kita buat
 import 'delivery_screen.dart';
 import 'promo_screen.dart';
 import 'help_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -22,6 +22,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode(); 
   int _selectedIndex = 0;
+  
+  // DAFTAR FAVORIT SEDERHANA
+  List<Map<String, String>> favoriteMenus = [];
 
   @override
   void dispose() {
@@ -36,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
       int index = keranjangBelanja.indexWhere((element) => element['name'] == item['name']);
       
       if (index != -1) {
-        keranjangBelanja[index]['qty']++;
+        keranjangBelanja[index]['qty'] = (keranjangBelanja[index]['qty'] as int) + 1;
       } else {
         keranjangBelanja.add({
           'name': item['name'],
@@ -46,6 +49,56 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     });
+  }
+
+  // FUNGSI FAVORIT SEDERHANA
+  void toggleFavorite(Map<String, String> item) {
+    setState(() {
+      // Cek apakah sudah ada di favorit
+      bool sudahFavorit = false;
+      for (var menu in favoriteMenus) {
+        if (menu['name'] == item['name']) {
+          sudahFavorit = true;
+          break;
+        }
+      }
+      
+      if (sudahFavorit) {
+        // Hapus dari favorit
+        favoriteMenus.removeWhere((menu) => menu['name'] == item['name']);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${item['name']} dihapus dari favorit'),
+            duration: Duration(milliseconds: 500),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        // Tambah ke favorit
+        favoriteMenus.add({
+          'name': item['name']!,
+          'price': item['price']!,
+          'img': item['img']!,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${item['name']} ditambahkan ke favorit'),
+            duration: Duration(milliseconds: 500),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    });
+  }
+
+  // Cek apakah item sudah favorit
+  bool isFavorite(Map<String, String> item) {
+    for (var menu in favoriteMenus) {
+      if (menu['name'] == item['name']) {
+        return true;
+      }
+    }
+    return false;
   }
 
   void _runSearch(String query) {
@@ -121,14 +174,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 20),
                             _buildPromoBanner(),
                             const SizedBox(height: 25),
-                            _buildFeaturesSection(), // Fitur sudah nyambung di sini!
+                            _buildFeaturesSection(),
                           ],
                         ),
                   const SizedBox(height: 40),
                 ],
               ),
             )
-          : _selectedIndex == 3 ? _buildFavoriteScreen() : _buildProfileScreen(),
+          : _selectedIndex == 3 
+              ? _buildFavoriteScreen() 
+              : ProfileScreen(username: widget.username),
 
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
@@ -208,21 +263,47 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildItemCardColored(Map<String, String> item) {
+    bool isFav = isFavorite(item);
+    
     return Container(
       width: 160, margin: const EdgeInsets.only(right: 15, bottom: 10),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 8, offset: const Offset(0, 4))]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(item: item))),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-              child: Container(
-                height: 120, width: double.infinity, color: Colors.orange.shade50,
-                child: item['img']!.startsWith('assets/') ? Image.asset(item['img']!, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.fastfood, color: Colors.orange, size: 50)) : Image.network(item['img']!, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.fastfood, color: Colors.orange, size: 50)),
+          Stack(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(item: item))),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  child: Container(
+                    height: 120, width: double.infinity, color: Colors.orange.shade50,
+                    child: item['img']!.startsWith('assets/') ? Image.asset(item['img']!, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.fastfood, color: Colors.orange, size: 50)) : Image.network(item['img']!, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.fastfood, color: Colors.orange, size: 50)),
+                  ),
+                ),
               ),
-            ),
+              // TOMBOL FAVORIT
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () => toggleFavorite(item),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.red : Colors.grey,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -281,7 +362,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- BAGIAN FITUR YANG SUDAH TERHUBUNG KE LAYAR BARU ---
   Widget _buildFeaturesSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -332,12 +412,99 @@ class _HomeScreenState extends State<HomeScreen> {
         : GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), padding: const EdgeInsets.symmetric(horizontal: 20), gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.65, crossAxisSpacing: 15, mainAxisSpacing: 15), itemCount: searchResult.length, itemBuilder: (context, index) => _buildItemCardColored(searchResult[index]));
   }
 
+  // HALAMAN FAVORIT
   Widget _buildFavoriteScreen() {
-    return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.favorite_border, size: 80, color: Colors.grey.shade400), const SizedBox(height: 16), const Text("Belum ada menu favorit", style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.bold))]));
-  }
-
-  Widget _buildProfileScreen() {
-    return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [CircleAvatar(radius: 50, backgroundColor: Colors.orange.shade100, child: const Icon(Icons.person, size: 50, color: Colors.orange)), const SizedBox(height: 16), Text(widget.username, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)), const SizedBox(height: 30), ElevatedButton.icon(onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst), icon: const Icon(Icons.logout), label: const Text("Keluar"), style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white))]));
+    if (favoriteMenus.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, 
+          children: [
+            Icon(Icons.favorite_border, size: 80, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            const Text("Belum ada menu favorit", style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text("Tekan ikon ♡ pada menu untuk menambah favorit", style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+          ]
+        ),
+      );
+    }
+    
+    return GridView.builder(
+      padding: const EdgeInsets.all(15),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, 
+        childAspectRatio: 0.65, 
+        crossAxisSpacing: 15, 
+        mainAxisSpacing: 15
+      ),
+      itemCount: favoriteMenus.length,
+      itemBuilder: (context, index) {
+        final item = favoriteMenus[index];
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 8, offset: const Offset(0, 4))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    child: Container(
+                      height: 120, width: double.infinity, color: Colors.orange.shade50,
+                      child: item['img']!.startsWith('assets/') 
+                        ? Image.asset(item['img']!, fit: BoxFit.cover) 
+                        : Image.network(item['img']!, fit: BoxFit.cover),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () => toggleFavorite(item),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.favorite, color: Colors.red, size: 18),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(item['price']!, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13)),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: () {
+                        tambahKeKeranjang(item);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${item['name']} ditambahkan ke keranjang"), duration: const Duration(milliseconds: 500), backgroundColor: Colors.orange));
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(8)),
+                        child: const Icon(Icons.add, size: 16, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildBottomNavigationBar() {
@@ -353,7 +520,11 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"), BottomNavigationBarItem(icon: Icon(Icons.search), label: "Cari"), BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Pesanan"), BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorit"), BottomNavigationBarItem(icon: Icon(Icons.person), label: "Akun"),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"), 
+        BottomNavigationBarItem(icon: Icon(Icons.search), label: "Cari"), 
+        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Pesanan"), 
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorit"), 
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Akun"),
       ],
     );
   }

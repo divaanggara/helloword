@@ -55,11 +55,11 @@ List<Map<String, String>> dataMinuman = [
   {"name": "Lemon Tea", "price": "Rp 10.000", "img": "assets/images/lemon_tea.jpg"},
   {"name": "Soda Gembira", "price": "Rp 15.000", "img": "assets/images/soda_gembira.jpg"},
   {"name": "Milo Dinosaur", "price": "Rp 12.000", "img": "assets/images/milo.jpg"},
-  {"name": "Cappuccino Ice", "price": "Rp 15.000", "img": "assets/images/Cappuccino Ice.jpg"},
+  {"name": "Cappuccino Ice", "price": "Rp 15.000", "img": "assets/images/Cappuccino_Ice.jpg"},
   {"name": "Es Cincau Hijau", "price": "Rp 8.000", "img": "assets/images/es_cincau.jpg"},
   {"name": "Es Doger", "price": "Rp 10.000", "img": "assets/images/es_doger.jpg"},
   {"name": "Es Pisang Ijo", "price": "Rp 15.000", "img": "assets/images/es_pisang_ijo.jpg"},
-  {"name": "Blue Ocean Soda", "price": "Rp 18.000", "img": "assets/images/blue_ocean.jpg"},
+  {"name": "Blue Ocean Soda", "price": "Rp 18.000", "img": "assets/images/Blue_Ocean_Soda.jpg"},
   {"name": "Wedang Jahe", "price": "Rp 8.000", "img": "assets/images/wedang_jahe.jpg"},
 ];
 
