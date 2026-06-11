@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MidtransService {
-  // 🔥 Server Key lu dari screenshot udah gua masukin!
-  static const String serverKey = 'YOUR_MIDTRANS_SERVER_KEY'; // TODO: Use .env for secrets
 
   static Future<String?> dapatkanLinkPembayaran({
     required String orderId,
@@ -14,6 +13,7 @@ class MidtransService {
     const String url = 'https://app.sandbox.midtrans.com/snap/v1/transactions';
     
     // Syarat dari Midtrans: Server Key harus di-encode pakai Base64
+    final String serverKey = dotenv.env['MIDTRANS_SERVER_KEY'] ?? '';
     final String basicAuth = 'Basic ${base64Encode(utf8.encode('$serverKey:'))}';
 
     final Map<String, dynamic> body = {
