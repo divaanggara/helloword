@@ -1,24 +1,33 @@
 name: helloword
-description: "A new Flutter project."
-publish_to: 'none'
+description: "A new Flutter project for Titik Kumpul Application."
+
+publish_to: 'none' 
+
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
+
+  cupertino_icons: ^1.0.8
+  supabase_flutter: ^2.0.0
+  image_picker: ^1.2.2
+  intl: ^0.20.2
+  http: ^1.2.0
+  url_launcher: ^6.2.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
 
-  # Tambahkan ini, pastikan lurus/indentasi benar
+  # 🔥 SEKARANG REGISTER FOLDERNYA SAMPAI IMAGES BRO!
   assets:
     - assets/images/

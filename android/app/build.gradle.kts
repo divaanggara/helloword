@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,8 +8,17 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// ==========================================
+// 1. MEMBACA FILE KEY.PROPERTIES
+// ==========================================
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
-    namespace = "com.example.helloword"
+    namespace = "com.ti24a5.app13"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,12 +31,24 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    // ==========================================
+    // 2. MENGHUBUNGKAN KE KTP DIGITAL (KEYSTORE)
+    // ==========================================
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storePassword = keystoreProperties["storePassword"] as String?
+        }
+    }
+
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.helloword"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // ==========================================
+        // INI YANG SUDAH DIGANTI SESUAI MINTANYA GOOGLE
+        // ==========================================
+        applicationId = "com.ti24a5.app13"
+        minSdk = 24  // <-- INI YANG SUDAH KITA UBAH JADI 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -32,9 +56,10 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // ==========================================
+            // 3. PAKAI KTP UNTUK VERSI RELEASE
+            // ==========================================
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
