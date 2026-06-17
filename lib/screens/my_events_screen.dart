@@ -20,15 +20,39 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
 
       if (userId == null) throw Exception("Lu belum login nih bro!");
 
-      // Mengambil data dari event_participants yang user_id-nya adalah user saat ini,
-      // lalu di-JOIN dengan data lengkap dari tabel 'events'
+      // 1. Ambil data dari event_participants tanpa JOIN langsung karena missing foreign key
       final response = await client
           .from('event_participants')
-          .select('*, events(*)')
+          .select()
           .eq('user_id', userId)
           .order('id', ascending: false);
 
-      return List<Map<String, dynamic>>.from(response);
+      final List<Map<String, dynamic>> participants = List<Map<String, dynamic>>.from(response);
+
+      if (participants.isEmpty) return [];
+
+      // 2. Kumpulkan semua event_id
+      final eventIds = participants.map((p) => p['event_id']).toList();
+
+      // 3. Ambil detail events berdasarkan event_id
+      final eventsResponse = await client
+          .from('events')
+          .select()
+          .filter('id', 'in', eventIds);
+
+      final List<Map<String, dynamic>> eventsList = List<Map<String, dynamic>>.from(eventsResponse);
+
+      // 4. Gabungkan datanya di Dart secara manual
+      for (var p in participants) {
+        try {
+          final evt = eventsList.firstWhere((e) => e['id'] == p['event_id']);
+          p['events'] = evt;
+        } catch (e) {
+          p['events'] = null;
+        }
+      }
+
+      return participants;
     } catch (e) {
       throw Exception('Gagal memuat event saya: $e');
     }

@@ -49,7 +49,8 @@ class _UserEventScreenState extends State<UserEventScreen> {
             itemCount: listEvent.length,
             itemBuilder: (context, index) {
               final event = listEvent[index];
-              final DateTime dateRaw = DateTime.parse(event['date']);
+              final rawDateString = event['date'] ?? event['tanggal'];
+              final DateTime dateRaw = rawDateString != null ? DateTime.parse(rawDateString) : DateTime.now();
               final String formattedDate = "${dateRaw.day}/${dateRaw.month}/${dateRaw.year}";
 
               return Card(
@@ -79,7 +80,7 @@ class _UserEventScreenState extends State<UserEventScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            event['title'] ?? '-',
+                            event['title'] ?? event['judul'] ?? 'Event Tanpa Judul',
                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                           ),
                           const SizedBox(height: 8),
@@ -97,7 +98,7 @@ class _UserEventScreenState extends State<UserEventScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  event['location'] ?? '-',
+                                  event['location'] ?? event['lokasi'] ?? '-',
                                   style: TextStyle(color: Colors.grey[700]),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -107,7 +108,7 @@ class _UserEventScreenState extends State<UserEventScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            event['description'] ?? '-',
+                            event['description'] ?? event['deskripsi'] ?? '-',
                             style: TextStyle(color: Colors.grey[600], height: 1.4),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,

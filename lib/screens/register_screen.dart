@@ -51,7 +51,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
 
         if (!mounted) return;
-        _showSnackBar('Akun berhasil dibuat! Silakan login bro gass 🔥', Colors.green);
+        _showSnackBar('Akun berhasil dibuat! 📩 Cek Inbox/Spam Email kamu untuk verifikasi sebelum login.', Colors.green);
         
         Navigator.pushReplacement(
           context,

@@ -26,17 +26,43 @@ class _InfoAnggotaScreenState extends State<InfoAnggotaScreen> {
     _ambilDaftarAnggota();
   }
 
-  // 🔍 FUNGSI AMBIL DATA DARI TABEL GROUP_MEMBERS
+  // 🔍 FUNGSI AMBIL DATA DARI TABEL GROUP_MEMBERS DAN PROFILES
   Future<void> _ambilDaftarAnggota() async {
     try {
-      final data = await _supabase
+      final membersData = await _supabase
           .from('group_members')
           .select()
           .eq('group_id', widget.groupId);
 
+      if (membersData.isNotEmpty) {
+        // Ambil semua user_id dari membersData
+        final userIds = membersData.map((m) => m['user_id']).toList();
+        
+        // Tarik data profil dari tabel profiles untuk user_id tersebut
+        final profilesData = await _supabase
+            .from('profiles')
+            .select('id, nama_lengkap, avatar_url')
+            .filter('id', 'in', userIds);
+
+        // Buat map agar mudah dicari
+        Map<String, Map<String, dynamic>> profileMap = {};
+        for (var p in profilesData) {
+          profileMap[p['id']] = p;
+        }
+
+        // Gabungkan data profil ke anggota list
+        for (var i = 0; i < membersData.length; i++) {
+          final uid = membersData[i]['user_id'];
+          if (profileMap.containsKey(uid)) {
+            membersData[i]['nama_lengkap'] = profileMap[uid]!['nama_lengkap'];
+            membersData[i]['avatar_url'] = profileMap[uid]!['avatar_url'];
+          }
+        }
+      }
+
       if (mounted) {
         setState(() {
-          _anggotaList = data;
+          _anggotaList = membersData;
           _isLoading = false;
         });
       }
@@ -86,21 +112,27 @@ class _InfoAnggotaScreenState extends State<InfoAnggotaScreen> {
                           final member = _anggotaList[index];
                           final userId = member['user_id'].toString();
                           final isMe = userId == currentUserId;
+                          
+                          final namaLengkap = member['nama_lengkap'] ?? 'Anggota';
+                          final avatarUrl = member['avatar_url'];
 
                           return ListTile(
                             leading: CircleAvatar(
                               backgroundColor: isMe ? Colors.blue : Colors.grey[400],
-                              child: const Icon(Icons.person, color: Colors.white),
+                              backgroundImage: avatarUrl != null && avatarUrl.toString().isNotEmpty ? NetworkImage(avatarUrl) : null,
+                              child: (avatarUrl == null || avatarUrl.toString().isEmpty) 
+                                ? const Icon(Icons.person, color: Colors.white) 
+                                : null,
                             ),
                             title: Text(
-                              isMe ? 'Anda (Sudah Join) 🤝' : 'Anggota Grup',
+                              isMe ? '$namaLengkap (Anda)' : namaLengkap,
                               style: TextStyle(
-                                fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
+                                fontWeight: isMe ? FontWeight.bold : FontWeight.w600,
                                 color: isMe ? Colors.blue : Colors.black87
                               ),
                             ),
                             subtitle: Text(
-                              'ID: ${userId.substring(0, 8)}... (Terdaftar)',
+                              isMe ? 'Bergabung di grup ini' : 'Anggota Grup',
                               style: TextStyle(color: Colors.grey[600], fontSize: 12),
                             ),
                             trailing: isMe
