@@ -628,7 +628,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UserEventScreen())),
                             child: Container(
                               margin: const EdgeInsets.symmetric(horizontal: 20),
-                              height: 200,
+                              width: double.infinity,
+                              height: 180,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: Colors.white12),
@@ -771,22 +772,29 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               return GestureDetector(
                                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UserEventScreen())),
                                 child: Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(12),
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF131B2F),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.white10),
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF1E6091), Color(0xFF131B2F)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(color: const Color(0xFF1E6091).withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
+                                    ],
+                                    border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
                                   ),
                                   child: Row(
                                     children: [
                                       ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(14),
                                         child: ev['image_url'] != null && ev['image_url'].toString().isNotEmpty
-                                          ? Image.network(ev['image_url'], width: 80, height: 80, fit: BoxFit.cover)
-                                          : Container(width: 80, height: 80, color: const Color(0xFF1E293B), child: const Icon(Icons.image, color: Colors.white24)),
+                                          ? Image.network(ev['image_url'], width: 90, height: 90, fit: BoxFit.cover)
+                                          : Container(width: 90, height: 90, color: const Color(0xFF1E293B), child: const Icon(Icons.sports_soccer, color: Colors.white54, size: 32)),
                                       ),
-                                      const SizedBox(width: 14),
+                                      const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -795,34 +803,62 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                  decoration: BoxDecoration(color: const Color(0xFF2563EB).withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                                                  child: const Text('BADMINTON', style: TextStyle(color: Color(0xFF3B82F6), fontSize: 9, fontWeight: FontWeight.bold)),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white.withOpacity(0.2), 
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    border: Border.all(color: Colors.white38, width: 0.5)
+                                                  ),
+                                                  child: const Text('BASKET', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                                                 ),
-                                                const Icon(Icons.bookmark_border, color: Colors.white54, size: 18),
+                                                Container(
+                                                  padding: const EdgeInsets.all(6),
+                                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
+                                                  child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 12),
+                                                ),
                                               ],
                                             ),
-                                            const SizedBox(height: 6),
+                                            const SizedBox(height: 8),
                                             Text(
-                                              ev['title'] ?? 'Event',
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
+                                              ev['title'] ?? 'Event Olahraga',
+                                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white, height: 1.2),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             const SizedBox(height: 6),
                                             Row(
                                               children: [
-                                                const Icon(Icons.calendar_today_outlined, size: 12, color: Colors.white54),
+                                                const Icon(Icons.location_on_rounded, size: 14, color: Colors.amberAccent),
                                                 const SizedBox(width: 4),
-                                                Text('Besok, 18:00 WIB • ', style: const TextStyle(fontSize: 11, color: Colors.white54)),
-                                                Expanded(child: Text(ev['location'] ?? '-', style: const TextStyle(fontSize: 11, color: Colors.white54), overflow: TextOverflow.ellipsis)),
+                                                Expanded(
+                                                  child: Text(
+                                                    ev['location'] ?? 'Lokasi Belum Ditentukan', 
+                                                    style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w500), 
+                                                    overflow: TextOverflow.ellipsis
+                                                  ),
+                                                ),
                                               ],
                                             ),
-                                            const SizedBox(height: 8),
+                                            const SizedBox(height: 10),
                                             Row(
-                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                _buildDummyAvatarStack(count: 12),
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(Icons.access_time_rounded, size: 14, color: Colors.white54),
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: Text(
+                                                          '${ev['date'] != null ? DateTime.parse(ev['date']).toString().split(' ')[0] : 'Besok'}, 19:00', 
+                                                          style: const TextStyle(fontSize: 11, color: Colors.white54, fontWeight: FontWeight.bold),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                _buildDummyAvatarStack(count: 8),
                                               ],
                                             )
                                           ],
@@ -840,7 +876,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         // 📣 BANNER AYO BUAT TIM
                         Container(
                           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                          width: double.infinity,
+                          height: 180,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
@@ -854,6 +892,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text('Ayo Buat Tim!', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
                               const SizedBox(height: 8),

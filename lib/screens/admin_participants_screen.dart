@@ -224,33 +224,64 @@ class _AdminParticipantsScreenState extends State<AdminParticipantsScreen> {
                               style: TextStyle(color: Colors.grey[600], fontSize: 13),
                             ),
                           ),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isFree 
-                                  ? Colors.blue.withOpacity(0.1) 
-                                  : (isPaid ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1)),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isFree ? Icons.check_circle : (isPaid ? Icons.check : Icons.access_time), 
-                                  color: isFree ? Colors.blue : (isPaid ? Colors.green : Colors.orange), 
-                                  size: 14
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: isFree 
+                                      ? Colors.blue.withOpacity(0.1) 
+                                      : (isPaid ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1)),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  isFree ? 'GRATIS' : (isPaid ? 'LUNAS' : 'PENDING'),
-                                  style: TextStyle(
-                                    color: isFree ? Colors.blue : (isPaid ? Colors.green : Colors.orange), 
-                                    fontWeight: FontWeight.bold, 
-                                    fontSize: 11
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isFree ? Icons.check_circle : (isPaid ? Icons.check : Icons.access_time), 
+                                      color: isFree ? Colors.blue : (isPaid ? Colors.green : Colors.orange), 
+                                      size: 14
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      isFree ? 'GRATIS' : (isPaid ? 'LUNAS' : 'PENDING'),
+                                      style: TextStyle(
+                                        color: isFree ? Colors.blue : (isPaid ? Colors.green : Colors.orange), 
+                                        fontWeight: FontWeight.bold, 
+                                        fontSize: 11
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.person_remove_rounded, color: Colors.red),
+                                tooltip: 'Kick Peserta',
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Kick Peserta?'),
+                                      content: Text('Keluarkan ${peserta['user_name']} dari event ini?'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+                                        TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Kick', style: TextStyle(color: Colors.red))),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm == true) {
+                                    try {
+                                      await supabase.from('event_participants').delete().eq('id', peserta['id']);
+                                      _ambilDataPeserta();
+                                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Peserta berhasil dikeluarkan.')));
+                                    } catch (e) {
+                                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       );

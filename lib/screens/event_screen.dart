@@ -172,6 +172,17 @@ class _UserEventScreenState extends State<UserEventScreen> {
                                       'is_paid': false, // Sesuai database awal lu, gratis di-set false/tetap valid di admin
                                     });
 
+                                    // 🚀 TAMBAH POIN & EVENT COUNT DI PROFIL
+                                    final profileData = await supabase.from('profiles').select('total_points, total_events').eq('id', userId).maybeSingle();
+                                    if (profileData != null) {
+                                      int currentPoints = profileData['total_points'] ?? 0;
+                                      int currentEvents = profileData['total_events'] ?? 0;
+                                      await supabase.from('profiles').update({
+                                        'total_points': currentPoints + 10, // Tambah 10 poin
+                                        'total_events': currentEvents + 1,  // Tambah 1 total event
+                                      }).eq('id', userId);
+                                    }
+
                                     if (!context.mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(

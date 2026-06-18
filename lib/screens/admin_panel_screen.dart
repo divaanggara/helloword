@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'admin_participants_screen.dart'; 
 import 'add_event_screen.dart'; 
 import 'login_screen.dart'; // Import untuk fungsi navigasi logout
+import 'admin_categories_screen.dart';
+import 'admin_users_screen.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({Key? key}) : super(key: key);
@@ -112,10 +114,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         surfaceTintColor: Colors.white,
         elevation: 0.5,
         shadowColor: Colors.black12,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF0F172A), size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(
           _getAppBarTitle(),
           style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w800, fontSize: 18),
@@ -166,9 +164,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             elevation: 0,
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), activeIcon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-              BottomNavigationBarItem(icon: Icon(Icons.fact_check_outlined), activeIcon: Icon(Icons.fact_check_rounded), label: 'Persetujuan'),
-              BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline_rounded), activeIcon: Icon(Icons.add_circle_rounded), label: 'Buat Event'),
-              BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long_rounded), label: 'Pelunasan'),
+              BottomNavigationBarItem(icon: Icon(Icons.fact_check_outlined), activeIcon: Icon(Icons.fact_check_rounded), label: 'Setuju'),
+              BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline_rounded), activeIcon: Icon(Icons.add_circle_rounded), label: 'Event'),
+              BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long_rounded), label: 'Bayar'),
+              BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings_rounded), label: 'Menu'),
             ],
           ),
         ),
@@ -182,6 +181,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       case 1: return 'Persetujuan Event';
       case 2: return 'Buat Event Baru';
       case 3: return 'Verifikasi Bayar';
+      case 4: return 'Pengaturan';
       default: return 'Admin Panel';
     }
   }
@@ -192,6 +192,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       case 1: return _buildPersetujuanTab();
       case 2: return const AddEventScreen(); 
       case 3: return _buildPelunasanTab();
+      case 4: return _buildSettingsTab();
       default: return _buildHomeTab();
     }
   }
@@ -321,14 +322,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      // Data Dummy Historikal
-                      _buildIncomeBar('Jan', 0.2, 'Rp 2jt', false),
-                      _buildIncomeBar('Feb', 0.4, 'Rp 4jt', false),
-                      _buildIncomeBar('Mar', 0.3, 'Rp 3jt', false),
-                      _buildIncomeBar('Apr', 0.7, 'Rp 7jt', false),
-                      _buildIncomeBar('Mei', 0.5, 'Rp 5jt', false),
-                      // Data Aktual Bulan Berjalan (Juni / Realtime Database)
-                      _buildIncomeBar('Jun', (_totalPendapatan > 0 ? 0.9 : 0.1), 'Rp ${_formatShort(_totalPendapatan)}', true),
+                      // Data Dummy Historikal berdasarkan 5 bulan ke belakang
+                      ...[0.2, 0.4, 0.3, 0.7, 0.5].asMap().entries.map((entry) {
+                        int m = DateTime.now().month - 5 + entry.key;
+                        return _buildIncomeBar(_getShortMonthName(m), entry.value, 'Rp ${(entry.value * 10).toInt()}jt', false);
+                      }),
+                      // Data Aktual Bulan Berjalan (Realtime Database)
+                      _buildIncomeBar(_getShortMonthName(DateTime.now().month), (_totalPendapatan > 0 ? 0.9 : 0.1), 'Rp ${_formatShort(_totalPendapatan)}', true),
                     ],
                   ),
                 ),
@@ -400,26 +400,63 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           ],
                         ),
                       ),
-                      trailing: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F172A), // Slate 900
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          elevation: 0,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AdminParticipantsScreen(
-                                eventId: event['id'].toString(),
-                                eventTitle: event['title'] ?? '-',
-                              ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0F172A), // Slate 900
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              elevation: 0,
                             ),
-                          );
-                        },
-                        child: const Text('Peserta', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AdminParticipantsScreen(
+                                    eventId: event['id'].toString(),
+                                    eventTitle: event['title'] ?? '-',
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text('Peserta', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                          ),
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, color: Color(0xFF64748B)),
+                            onSelected: (value) async {
+                              if (value == 'edit') {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => AddEventScreen(eventData: event)));
+                              } else if (value == 'delete') {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Hapus Event?'),
+                                    content: const Text('Tindakan ini tidak dapat dikembalikan.'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+                                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus', style: TextStyle(color: Colors.red))),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) {
+                                  try {
+                                    await supabase.from('events').delete().eq('id', event['id']);
+                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Event dihapus!')));
+                                  } catch (e) {
+                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menghapus: $e')));
+                                  }
+                                }
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(value: 'edit', child: Text('Edit Event')),
+                              const PopupMenuItem(value: 'delete', child: Text('Hapus Event', style: TextStyle(color: Colors.red))),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -648,6 +685,73 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
+  // ==================== TAB 5: PENGATURAN (MANAJEMEN MENU ADMIN) ====================
+  Widget _buildSettingsTab() {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        const Text('Pengaturan Admin', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+        const SizedBox(height: 24),
+        _buildMenuCard(
+          icon: Icons.category_rounded,
+          color: const Color(0xFFF59E0B),
+          title: 'Manajemen Kategori',
+          subtitle: 'Tambah atau hapus grup olahraga',
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminCategoriesScreen()));
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildMenuCard(
+          icon: Icons.people_alt_rounded,
+          color: const Color(0xFF2563EB),
+          title: 'Manajemen User',
+          subtitle: 'Lihat daftar pengguna & Banned akun',
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminUsersScreen()));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuCard({required IconData icon, required Color color, required String title, required String subtitle, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Color(0xFF0F172A))),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFCBD5E1), size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
   // --- HELPER WIDGETS & FORMATTER ---
 
   String _formatRupiah(int number) {
@@ -665,6 +769,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       return '${(number / 1000).toStringAsFixed(0)}k';
     }
     return number.toString();
+  }
+
+  String _getShortMonthName(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+    int adjustedMonth = month;
+    while (adjustedMonth <= 0) {
+      adjustedMonth += 12;
+    }
+    return months[(adjustedMonth - 1) % 12];
   }
 
   Widget _buildIncomeBar(String month, double percentage, String label, bool isCurrent) {
