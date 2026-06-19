@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:async';
 import 'grup_olahraga_screen.dart';
 import 'admin_panel_screen.dart'; 
 import 'login_screen.dart'; 
@@ -31,6 +32,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
   String _namaUser = 'Memuat...';
   String? _avatarUrl;
   bool _isAdmin = false; 
+  int _totalPoints = 0;
+  StreamSubscription<List<Map<String, dynamic>>>? _profilSubscription;
 
   @override
   void initState() {
@@ -40,30 +43,31 @@ class _BerandaScreenState extends State<BerandaScreen> {
     _searchController.addListener(_filterPencarian);
   }
 
-  // 👤 AMBIL DATA PROFIL & CEK STATUS ADMIN
-  Future<void> _ambilDataProfil() async {
+  @override
+  void dispose() {
+    _profilSubscription?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // 👤 AMBIL DATA PROFIL & CEK STATUS ADMIN SECARA REAL-TIME
+  void _ambilDataProfil() {
     if (_user == null) return;
-    try {
-      final data = await Supabase.instance.client
-          .from('profiles')
-          .select() 
-          .eq('id', _user!.id)
-          .single();
-      
-      if (mounted) {
+    _profilSubscription = Supabase.instance.client
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', _user!.id)
+        .listen((data) {
+      if (data.isNotEmpty && mounted) {
+        final profile = data.first;
         setState(() {
-          _namaUser = data['nama_lengkap'] ?? 'Diva Anggara!'; 
-          if ((data as Map).containsKey('avatar_url')) {
-            _avatarUrl = data['avatar_url'];
-          }
-          if (data.containsKey('role')) {
-            _isAdmin = data['role'] == 'admin';
-          }
+          _namaUser = profile['nama_lengkap'] ?? 'Diva Anggara!'; 
+          _avatarUrl = profile['avatar_url'];
+          _isAdmin = profile['role'] == 'admin';
+          _totalPoints = profile['total_points'] ?? 0;
         });
       }
-    } catch (e) {
-      debugPrint('Gagal ambil profil: $e');
-    }
+    }, onError: (e) => debugPrint('Gagal stream profil: $e'));
   }
 
   // 🟦 AMBIL DATA GRUP DAN EVENT (Pencarian mendukung keduanya)
@@ -403,11 +407,21 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Halo, 👋', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                        Text(
-                          _namaUser.contains('!') ? _namaUser : '$_namaUser!', 
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _namaUser.contains('!') ? _namaUser : '$_namaUser!', 
+                                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (_totalPoints >= 1000) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.workspace_premium, color: Colors.amber, size: 20),
+                            ]
+                          ],
                         ),
                       ],
                     ),

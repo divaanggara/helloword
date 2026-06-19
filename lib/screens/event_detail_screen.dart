@@ -39,7 +39,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           .select('''
             user_id,
             is_paid,
-            profiles ( nama_lengkap )
+            profiles ( nama_lengkap, total_points )
           ''')
           .eq('event_id', eventId);
 
@@ -237,6 +237,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           // Ngekstrak nama_lengkap dari relasi profiles
                           final profil = p['profiles'] as Map<String, dynamic>?;
                           final namaPemain = profil?['nama_lengkap'] ?? 'User Tanpa Nama';
+                          final totalPoints = profil?['total_points'] ?? 0;
                           final isPaid = p['is_paid'] == true;
 
                           return ListTile(
@@ -245,7 +246,17 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               backgroundColor: Color(0xFFE8F1F8),
                               child: Icon(Icons.sports_soccer, color: Color(0xFF1E5F94)),
                             ),
-                            title: Text(namaPemain, style: const TextStyle(fontWeight: FontWeight.w500)),
+                            title: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(namaPemain, style: const TextStyle(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                                ),
+                                if (totalPoints >= 1000) ...[
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.workspace_premium, color: Colors.amber, size: 18),
+                                ]
+                              ],
+                            ),
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(

@@ -41,7 +41,7 @@ class _InfoAnggotaScreenState extends State<InfoAnggotaScreen> {
         // Tarik data profil dari tabel profiles untuk user_id tersebut
         final profilesData = await _supabase
             .from('profiles')
-            .select('id, nama_lengkap, avatar_url')
+            .select('id, nama_lengkap, avatar_url, total_points')
             .filter('id', 'in', userIds);
 
         // Buat map agar mudah dicari
@@ -56,6 +56,7 @@ class _InfoAnggotaScreenState extends State<InfoAnggotaScreen> {
           if (profileMap.containsKey(uid)) {
             membersData[i]['nama_lengkap'] = profileMap[uid]!['nama_lengkap'];
             membersData[i]['avatar_url'] = profileMap[uid]!['avatar_url'];
+            membersData[i]['total_points'] = profileMap[uid]!['total_points'] ?? 0;
           }
         }
       }
@@ -115,6 +116,7 @@ class _InfoAnggotaScreenState extends State<InfoAnggotaScreen> {
                           
                           final namaLengkap = member['nama_lengkap'] ?? 'Anggota';
                           final avatarUrl = member['avatar_url'];
+                          final totalPoints = member['total_points'] ?? 0;
 
                           return ListTile(
                             leading: CircleAvatar(
@@ -124,12 +126,23 @@ class _InfoAnggotaScreenState extends State<InfoAnggotaScreen> {
                                 ? const Icon(Icons.person, color: Colors.white) 
                                 : null,
                             ),
-                            title: Text(
-                              isMe ? '$namaLengkap (Anda)' : namaLengkap,
-                              style: TextStyle(
-                                fontWeight: isMe ? FontWeight.bold : FontWeight.w600,
-                                color: isMe ? Colors.blue : Colors.black87
-                              ),
+                            title: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    isMe ? '$namaLengkap (Anda)' : namaLengkap,
+                                    style: TextStyle(
+                                      fontWeight: isMe ? FontWeight.bold : FontWeight.w600,
+                                      color: isMe ? Colors.blue : Colors.black87
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (totalPoints >= 1000) ...[
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.workspace_premium, color: Colors.amber, size: 18),
+                                ]
+                              ],
                             ),
                             subtitle: Text(
                               isMe ? 'Bergabung di grup ini' : 'Anggota Grup',

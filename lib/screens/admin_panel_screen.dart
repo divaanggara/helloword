@@ -433,20 +433,34 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: const Text('Hapus Event?'),
-                                    content: const Text('Tindakan ini tidak dapat dikembalikan.'),
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                    title: const Text('Hapus Event?', style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+                                    content: const Text('Tindakan ini tidak dapat dikembalikan.', style: TextStyle(color: Color(0xFF475569))),
                                     actions: [
-                                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-                                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus', style: TextStyle(color: Colors.red))),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, false), 
+                                        child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold))
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFFEF4444),
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                                        ),
+                                        onPressed: () => Navigator.pop(context, true), 
+                                        child: const Text('Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                      ),
                                     ],
                                   ),
                                 );
                                 if (confirm == true) {
                                   try {
                                     await supabase.from('events').delete().eq('id', event['id']);
-                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Event dihapus!')));
+                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Event dihapus!'), backgroundColor: Color(0xFF22C55E)));
                                   } catch (e) {
-                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menghapus: $e')));
+                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menghapus: $e'), backgroundColor: const Color(0xFFEF4444)));
                                   }
                                 }
                               }

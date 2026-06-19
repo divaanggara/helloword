@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import 'login_screen.dart'; // Import login screen untuk fungsi Keluar
 import 'my_events_screen.dart'; // Import layar riwayat event
 
@@ -23,46 +24,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _totalPoints = 0;
   int _totalEvents = 0;
   int _totalCampaign = 0;
+  StreamSubscription<List<Map<String, dynamic>>>? _profileSubscription;
 
   @override
   void initState() {
     super.initState();
-    _fetchProfileData();
+    _listenProfileData();
   }
 
-  Future<void> _fetchProfileData() async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        // Mengambil data dari tabel profiles
-        final data = await _supabase
-            .from('profiles')
-            .select('nama_lengkap, email, avatar_url, total_points, total_campaign')
-            .eq('id', user.id)
-            .maybeSingle();
+  @override
+  void dispose() {
+    _profileSubscription?.cancel();
+    super.dispose();
+  }
 
-        // Mengambil total event dinamis dari history
-        final eventData = await _supabase
-            .from('event_participants')
-            .select('id')
-            .eq('user_id', user.id);
+  void _listenProfileData() {
+    final user = _supabase.auth.currentUser;
+    if (user != null) {
+      _profileSubscription = _supabase
+          .from('profiles')
+          .stream(primaryKey: ['id'])
+          .eq('id', user.id)
+          .listen((data) async {
+        if (data.isNotEmpty) {
+          final profile = data.first;
+          
+          // Mengambil total event dinamis dari history
+          final eventData = await _supabase
+              .from('event_participants')
+              .select('id')
+              .eq('user_id', user.id);
 
-        if (data != null && mounted) {
-          setState(() {
-            _namaLengkap = data['nama_lengkap'] ?? 'User';
-            _email = data['email'] ?? user.email ?? 'Tidak ada email';
-            _avatarUrl = data['avatar_url'];
-            _totalPoints = data['total_points'] ?? 0;
-            _totalEvents = (eventData as List).length; // Dynamic Count!
-            _totalCampaign = data['total_campaign'] ?? 0;
-            _isLoading = false;
-          });
-        } else {
-          if (mounted) setState(() => _isLoading = false);
+          if (mounted) {
+            setState(() {
+              _namaLengkap = profile['nama_lengkap'] ?? 'User';
+              _email = profile['email'] ?? user.email ?? 'Tidak ada email';
+              _avatarUrl = profile['avatar_url'];
+              _totalPoints = profile['total_points'] ?? 0;
+              _totalEvents = (eventData as List).length; 
+              _totalCampaign = profile['total_campaign'] ?? 0;
+              _isLoading = false;
+            });
+          }
         }
-      }
-    } catch (e) {
-      debugPrint('Error fetch profile: $e');
+      }, onError: (error) {
+        debugPrint('Error fetch profile stream: $error');
+        if (mounted) setState(() => _isLoading = false);
+      });
+    } else {
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -403,9 +412,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                _namaLengkap,
-                                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white),
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      _namaLengkap,
+                                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (_totalPoints >= 1000) ...[
+                                    const SizedBox(width: 8),
+                                    const Icon(Icons.workspace_premium, color: Colors.amber, size: 24),
+                                  ],
+                                ],
                               ),
                               const SizedBox(height: 4),
                               Text(
