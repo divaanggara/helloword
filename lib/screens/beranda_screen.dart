@@ -88,7 +88,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
           _daftarGrup = List<Map<String, dynamic>>.from(resGrup);
           _filteredGrup = _daftarGrup; 
           
-          _daftarEvent = List<Map<String, dynamic>>.from(resEvent);
+          // Filter agar event yang direquest user (group_id != null) tidak masuk ke beranda utama
+          _daftarEvent = List<Map<String, dynamic>>.from(resEvent).where((e) {
+            final isMainEvent = e['group_id'] == null;
+            final isApproved = e['status'] == null || e['status'] == 'approved';
+            return isMainEvent && isApproved;
+          }).toList();
           _filteredEvent = _daftarEvent;
           
           _isLoading = false;
@@ -323,7 +328,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             color: _getWarnaGrup(grup['id']).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(_getIconGrup(grup['nama_grup']), color: _getWarnaGrup(grup['id'])),
+                          clipBehavior: Clip.antiAlias,
+                          child: grup['icon_url'] != null && grup['icon_url'].toString().isNotEmpty
+                              ? Image.network(grup['icon_url'], fit: BoxFit.cover, width: 24, height: 24, errorBuilder: (c,e,s) => Icon(_getIconGrup(grup['nama_grup']), color: _getWarnaGrup(grup['id'])))
+                              : Icon(_getIconGrup(grup['nama_grup']), color: _getWarnaGrup(grup['id'])),
                         ),
                         title: Text(grup['nama_grup'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                         trailing: const Icon(Icons.chevron_right, color: Colors.white54),
@@ -336,6 +344,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                 groupId: grup['id'],
                                 namaGrup: grup['nama_grup'],
                                 warnaGrup: _getWarnaGrup(grup['id']),
+                                iconUrl: grup['icon_url'],
+                                bannerUrl: grup['banner_url'],
+                                deskripsi: grup['deskripsi'],
                               ),
                             ),
                           );
@@ -569,6 +580,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                         groupId: grup['id'], 
                                         namaGrup: grup['nama_grup'], 
                                         warnaGrup: _getWarnaGrup(grup['id']),
+                                        iconUrl: grup['icon_url'],
+                                        bannerUrl: grup['banner_url'],
+                                        deskripsi: grup['deskripsi'],
                                       ),
                                     ),
                                   ),
@@ -582,11 +596,25 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Icon(
-                                          _getIconGrup(grup['nama_grup']),
-                                          color: iconColor,
-                                          size: 28,
-                                        ),
+                                        grup['icon_url'] != null && grup['icon_url'].toString().isNotEmpty
+                                            ? ClipOval(
+                                                child: Image.network(
+                                                  grup['icon_url'],
+                                                  width: 28,
+                                                  height: 28,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) => Icon(
+                                                    _getIconGrup(grup['nama_grup']),
+                                                    color: iconColor,
+                                                    size: 28,
+                                                  ),
+                                                ),
+                                              )
+                                            : Icon(
+                                                _getIconGrup(grup['nama_grup']),
+                                                color: iconColor,
+                                                size: 28,
+                                              ),
                                         const SizedBox(height: 8),
                                         Text(
                                           grup['nama_grup'].split(' ')[0], 

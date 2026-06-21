@@ -43,7 +43,26 @@ class _UserEventScreenState extends State<UserEventScreen> {
             );
           }
 
-          final listEvent = snapshot.data!;
+          // Filter agar event yang di-request user (group_id != null) tidak masuk ke event utama
+          // dan pastikan status disetujui (event admin mungkin tidak punya status)
+          final listEvent = snapshot.data!.where((e) {
+            final isMainEvent = e['group_id'] == null;
+            final isApproved = e['status'] == null || e['status'] == 'approved';
+            return isMainEvent && isApproved;
+          }).toList();
+
+          if (listEvent.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  'Belum ada event aktif saat ini.\nTunggu update dari Admin ya! 🙌',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white54, fontSize: 16, height: 1.4),
+                ),
+              ),
+            );
+          }
 
           return Column(
             children: [

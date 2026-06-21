@@ -124,7 +124,10 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: isSelected ? const Color(0xFF3B82F6) : Colors.blue.shade50,
-                          child: Icon(_getIconGrup(grup['nama_grup']), color: isSelected ? Colors.white : const Color(0xFF3B82F6)),
+                          backgroundImage: grup['icon_url'] != null && grup['icon_url'].toString().isNotEmpty ? NetworkImage(grup['icon_url']) : null,
+                          child: grup['icon_url'] != null && grup['icon_url'].toString().isNotEmpty
+                              ? null
+                              : Icon(_getIconGrup(grup['nama_grup']), color: isSelected ? Colors.white : const Color(0xFF3B82F6)),
                         ),
                         title: Text(grup['nama_grup'], style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF3B82F6) : Colors.black87)),
                         trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFF3B82F6)) : const Icon(Icons.chevron_right, color: Colors.grey),
@@ -564,7 +567,17 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                                         color: isSelected ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.05),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(_getIconGrup(kat['nama_grup']), color: isSelected ? Colors.white : Colors.white70, size: 22),
+                                      child: kat['icon_url'] != null && kat['icon_url'].toString().isNotEmpty
+                                          ? ClipOval(
+                                              child: Image.network(
+                                                kat['icon_url'],
+                                                width: 22,
+                                                height: 22,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) => Icon(_getIconGrup(kat['nama_grup']), color: isSelected ? Colors.white : Colors.white70, size: 22),
+                                              ),
+                                            )
+                                          : Icon(_getIconGrup(kat['nama_grup']), color: isSelected ? Colors.white : Colors.white70, size: 22),
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
