@@ -4,6 +4,7 @@ import 'admin_panel_screen.dart';
 import 'beranda_screen.dart'; 
 import 'main_navigation.dart';
 import 'register_screen.dart'; 
+import 'banned_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -51,16 +52,27 @@ class _LoginScreenState extends State<LoginScreen> {
       final user = response.user;
 
       if (user != null && mounted) {
-        // 2. Ambil data 'role' dari tabel profiles sesuai database lo
+        // 2. Ambil data 'role' dan 'is_banned' dari tabel profiles sesuai database lo
         final dataProfil = await Supabase.instance.client
             .from('profiles')
-            .select('role')
+            .select('role, is_banned')
             .eq('id', user.id)
             .single();
 
-        final String roleUser = dataProfil['role'] ?? 'user';
+        final bool isBanned = dataProfil['is_banned'] == true;
 
         if (!mounted) return;
+
+        if (isBanned) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const BannedScreen()),
+          );
+          return;
+        }
+
+        final String roleUser = dataProfil['role'] ?? 'user';
+
         _showSnackBar('Login Sukses! 🔥', Colors.green);
 
         // 3. Cek apakah dia admin atau user biasa
