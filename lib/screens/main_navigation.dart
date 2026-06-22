@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'beranda_screen.dart'; // Import file baru kita tadi
 import 'ajukan_match_screen.dart'; // File ajukan match milik lo yang udah ada
-import 'invoice_screen.dart'; 
+import 'profile_screen.dart'; 
 import 'event_screen.dart'; // 🔥 1. IMPORT FILE EVENT SCREEN-NYA DI SINI BRO!
 
 
@@ -21,8 +21,8 @@ class _MainNavigationState extends State<MainNavigation> {
     const UserEventScreen(), // 🔥 2. SEKARANG KITA GANTI DI SINI JADI HALAMAN EVENT UTAMA!
     const AjukanMatchScreen(), // Indeks 2 (Memanggil file Ajukan Match asli punya lo)
     
-    // 🔥 PERBAIKAN DI SINI: Hapus kata 'const' di depan, lalu tambahkan (event: const {})
-    InvoiceScreen(event: const {}), // Indeks 3 (Tampilan Invoice/Dashboard lo)
+    // Tampilan Profil Baru
+    const ProfileScreen(), // Indeks 3
   ];
 
   @override
@@ -58,8 +58,8 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'Ajukan Match',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: 'Invoice',
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
           ),
         ],
       ),

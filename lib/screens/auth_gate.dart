@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
 import 'main_navigation.dart'; // Tetap dipake buat user biasa
 import 'admin_panel_screen.dart'; // 👑 Import file dashboard khusus admin lo di sini
+import 'banned_screen.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -12,12 +13,17 @@ class AuthGate extends StatelessWidget {
     try {
       final data = await Supabase.instance.client
           .from('profiles')
-          .select('role')
+          .select('role, is_banned')
           .eq('id', userId)
           .maybeSingle();
       
-      if (data != null && data['role'] != null) {
-        return data['role'].toString().toLowerCase();
+      if (data != null) {
+        if (data['is_banned'] == true) {
+          return 'banned';
+        }
+        if (data['role'] != null) {
+          return data['role'].toString().toLowerCase();
+        }
       }
       return 'user'; // Default kalau role gak ketemu/kosong
     } catch (e) {
@@ -55,7 +61,9 @@ class AuthGate extends StatelessWidget {
 
               final role = roleSnapshot.data ?? 'user';
 
-              if (role == 'admin') {
+              if (role == 'banned') {
+                return const BannedScreen(); // ⛔ Arahkan ke halaman Banned Khusus
+              } else if (role == 'admin') {
                 return const AdminPanelScreen(); // 👑 Akun Admin langsung dilempar ke sini
               } else {
                 return const MainNavigation(); // ⚽ Akun User biasa masuk ke navigasi utama lo

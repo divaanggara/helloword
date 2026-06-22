@@ -41,18 +41,21 @@ class _AdminParticipantsScreenState extends State<AdminParticipantsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F9),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E6091),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0.5,
+        shadowColor: Colors.black12,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: Text(
           widget.eventTitle,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w800, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF2563EB)),
             onPressed: _ambilDataPeserta,
           )
         ],
@@ -203,15 +206,18 @@ class _AdminParticipantsScreenState extends State<AdminParticipantsScreen> {
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6, offset: const Offset(0, 2))]
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4)),
+                          ],
                         ),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.all(10),
-                          leading: const CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Color(0xFF1E6091),
-                            child: Icon(Icons.person, color: Colors.white),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(color: const Color(0xFF3B82F6).withOpacity(0.1), shape: BoxShape.circle),
+                            child: const Icon(Icons.person_rounded, color: Color(0xFF2563EB), size: 24),
                           ),
                           title: Text(
                             peserta['user_name'] ?? 'Nama Anonim',
@@ -224,33 +230,78 @@ class _AdminParticipantsScreenState extends State<AdminParticipantsScreen> {
                               style: TextStyle(color: Colors.grey[600], fontSize: 13),
                             ),
                           ),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isFree 
-                                  ? Colors.blue.withOpacity(0.1) 
-                                  : (isPaid ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1)),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isFree ? Icons.check_circle : (isPaid ? Icons.check : Icons.access_time), 
-                                  color: isFree ? Colors.blue : (isPaid ? Colors.green : Colors.orange), 
-                                  size: 14
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: isFree 
+                                      ? Colors.blue.withOpacity(0.1) 
+                                      : (isPaid ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1)),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  isFree ? 'GRATIS' : (isPaid ? 'LUNAS' : 'PENDING'),
-                                  style: TextStyle(
-                                    color: isFree ? Colors.blue : (isPaid ? Colors.green : Colors.orange), 
-                                    fontWeight: FontWeight.bold, 
-                                    fontSize: 11
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isFree ? Icons.check_circle : (isPaid ? Icons.check : Icons.access_time), 
+                                      color: isFree ? Colors.blue : (isPaid ? Colors.green : Colors.orange), 
+                                      size: 14
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      isFree ? 'GRATIS' : (isPaid ? 'LUNAS' : 'PENDING'),
+                                      style: TextStyle(
+                                        color: isFree ? Colors.blue : (isPaid ? Colors.green : Colors.orange), 
+                                        fontWeight: FontWeight.bold, 
+                                        fontSize: 11
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                                IconButton(
+                                  icon: const Icon(Icons.person_remove_rounded, color: Color(0xFFEF4444)),
+                                  tooltip: 'Kick Peserta',
+                                  onPressed: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        backgroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        title: const Text('Kick Peserta?', style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+                                        content: Text('Keluarkan ${peserta['user_name']} dari event ini?', style: const TextStyle(color: Color(0xFF475569))),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context, false), 
+                                            child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold))
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFFEF4444),
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                                            ),
+                                            onPressed: () => Navigator.pop(context, true), 
+                                            child: const Text('Kick', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (confirm == true) {
+                                      try {
+                                        await supabase.from('event_participants').delete().eq('id', peserta['id']);
+                                        _ambilDataPeserta();
+                                        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Peserta berhasil dikeluarkan.'), backgroundColor: Color(0xFF22C55E)));
+                                      } catch (e) {
+                                        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e'), backgroundColor: const Color(0xFFEF4444)));
+                                      }
+                                    }
+                                  },
+                                ),
+                            ],
                           ),
                         ),
                       );

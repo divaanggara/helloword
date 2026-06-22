@@ -57,6 +57,17 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           'is_paid': true, 
         });
 
+        // 5. Tambah poin dan event
+        final profileData = await Supabase.instance.client.from('profiles').select('total_points, total_events').eq('id', user.id).maybeSingle();
+        if (profileData != null) {
+          int currentPoints = profileData['total_points'] ?? 0;
+          int currentEvents = profileData['total_events'] ?? 0;
+          await Supabase.instance.client.from('profiles').update({
+            'total_points': currentPoints + 10, // Tambah 10 poin
+            'total_events': currentEvents + 1,  // Tambah 1 total event
+          }).eq('id', user.id);
+        }
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
              const SnackBar(content: Text('Membuka halaman pembayaran...'), backgroundColor: Colors.green),

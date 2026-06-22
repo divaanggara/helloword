@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:async';
 import 'grup_olahraga_screen.dart';
 import 'admin_panel_screen.dart'; 
 import 'login_screen.dart'; 
@@ -31,6 +32,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
   String _namaUser = 'Memuat...';
   String? _avatarUrl;
   bool _isAdmin = false; 
+  int _totalPoints = 0;
+  StreamSubscription<List<Map<String, dynamic>>>? _profilSubscription;
 
   @override
   void initState() {
@@ -40,30 +43,31 @@ class _BerandaScreenState extends State<BerandaScreen> {
     _searchController.addListener(_filterPencarian);
   }
 
-  // 👤 AMBIL DATA PROFIL & CEK STATUS ADMIN
-  Future<void> _ambilDataProfil() async {
+  @override
+  void dispose() {
+    _profilSubscription?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // 👤 AMBIL DATA PROFIL & CEK STATUS ADMIN SECARA REAL-TIME
+  void _ambilDataProfil() {
     if (_user == null) return;
-    try {
-      final data = await Supabase.instance.client
-          .from('profiles')
-          .select() 
-          .eq('id', _user!.id)
-          .single();
-      
-      if (mounted) {
+    _profilSubscription = Supabase.instance.client
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', _user!.id)
+        .listen((data) {
+      if (data.isNotEmpty && mounted) {
+        final profile = data.first;
         setState(() {
-          _namaUser = data['nama_lengkap'] ?? 'Diva Anggara!'; 
-          if ((data as Map).containsKey('avatar_url')) {
-            _avatarUrl = data['avatar_url'];
-          }
-          if (data.containsKey('role')) {
-            _isAdmin = data['role'] == 'admin';
-          }
+          _namaUser = profile['nama_lengkap'] ?? 'Diva Anggara!'; 
+          _avatarUrl = profile['avatar_url'];
+          _isAdmin = profile['role'] == 'admin';
+          _totalPoints = profile['total_points'] ?? 0;
         });
       }
-    } catch (e) {
-      debugPrint('Gagal ambil profil: $e');
-    }
+    }, onError: (e) => debugPrint('Gagal stream profil: $e'));
   }
 
   // 🟦 AMBIL DATA GRUP DAN EVENT (Pencarian mendukung keduanya)
@@ -84,7 +88,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
           _daftarGrup = List<Map<String, dynamic>>.from(resGrup);
           _filteredGrup = _daftarGrup; 
           
-          _daftarEvent = List<Map<String, dynamic>>.from(resEvent);
+          // Filter agar event yang direquest user (group_id != null) tidak masuk ke beranda utama
+          _daftarEvent = List<Map<String, dynamic>>.from(resEvent).where((e) {
+            final isMainEvent = e['group_id'] == null;
+            final isApproved = e['status'] == null || e['status'] == 'approved';
+            return isMainEvent && isApproved;
+          }).toList();
           _filteredEvent = _daftarEvent;
           
           _isLoading = false;
@@ -319,7 +328,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             color: _getWarnaGrup(grup['id']).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(_getIconGrup(grup['nama_grup']), color: _getWarnaGrup(grup['id'])),
+                          clipBehavior: Clip.antiAlias,
+                          child: grup['icon_url'] != null && grup['icon_url'].toString().isNotEmpty
+                              ? Image.network(grup['icon_url'], fit: BoxFit.cover, width: 24, height: 24, errorBuilder: (c,e,s) => Icon(_getIconGrup(grup['nama_grup']), color: _getWarnaGrup(grup['id'])))
+                              : Icon(_getIconGrup(grup['nama_grup']), color: _getWarnaGrup(grup['id'])),
                         ),
                         title: Text(grup['nama_grup'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                         trailing: const Icon(Icons.chevron_right, color: Colors.white54),
@@ -332,6 +344,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                 groupId: grup['id'],
                                 namaGrup: grup['nama_grup'],
                                 warnaGrup: _getWarnaGrup(grup['id']),
+                                iconUrl: grup['icon_url'],
+                                bannerUrl: grup['banner_url'],
+                                deskripsi: grup['deskripsi'],
                               ),
                             ),
                           );
@@ -403,11 +418,21 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Halo, 👋', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                        Text(
-                          _namaUser.contains('!') ? _namaUser : '$_namaUser!', 
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _namaUser.contains('!') ? _namaUser : '$_namaUser!', 
+                                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (_totalPoints >= 1000) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.workspace_premium, color: Colors.amber, size: 20),
+                            ]
+                          ],
                         ),
                       ],
                     ),
@@ -555,6 +580,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                         groupId: grup['id'], 
                                         namaGrup: grup['nama_grup'], 
                                         warnaGrup: _getWarnaGrup(grup['id']),
+                                        iconUrl: grup['icon_url'],
+                                        bannerUrl: grup['banner_url'],
+                                        deskripsi: grup['deskripsi'],
                                       ),
                                     ),
                                   ),
@@ -568,11 +596,25 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Icon(
-                                          _getIconGrup(grup['nama_grup']),
-                                          color: iconColor,
-                                          size: 28,
-                                        ),
+                                        grup['icon_url'] != null && grup['icon_url'].toString().isNotEmpty
+                                            ? ClipOval(
+                                                child: Image.network(
+                                                  grup['icon_url'],
+                                                  width: 28,
+                                                  height: 28,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) => Icon(
+                                                    _getIconGrup(grup['nama_grup']),
+                                                    color: iconColor,
+                                                    size: 28,
+                                                  ),
+                                                ),
+                                              )
+                                            : Icon(
+                                                _getIconGrup(grup['nama_grup']),
+                                                color: iconColor,
+                                                size: 28,
+                                              ),
                                         const SizedBox(height: 8),
                                         Text(
                                           grup['nama_grup'].split(' ')[0], 
@@ -628,7 +670,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UserEventScreen())),
                             child: Container(
                               margin: const EdgeInsets.symmetric(horizontal: 20),
-                              height: 200,
+                              width: double.infinity,
+                              height: 180,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: Colors.white12),
@@ -771,22 +814,29 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               return GestureDetector(
                                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UserEventScreen())),
                                 child: Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(12),
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF131B2F),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.white10),
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF1E6091), Color(0xFF131B2F)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(color: const Color(0xFF1E6091).withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
+                                    ],
+                                    border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
                                   ),
                                   child: Row(
                                     children: [
                                       ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(14),
                                         child: ev['image_url'] != null && ev['image_url'].toString().isNotEmpty
-                                          ? Image.network(ev['image_url'], width: 80, height: 80, fit: BoxFit.cover)
-                                          : Container(width: 80, height: 80, color: const Color(0xFF1E293B), child: const Icon(Icons.image, color: Colors.white24)),
+                                          ? Image.network(ev['image_url'], width: 90, height: 90, fit: BoxFit.cover)
+                                          : Container(width: 90, height: 90, color: const Color(0xFF1E293B), child: const Icon(Icons.sports_soccer, color: Colors.white54, size: 32)),
                                       ),
-                                      const SizedBox(width: 14),
+                                      const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -795,34 +845,62 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                  decoration: BoxDecoration(color: const Color(0xFF2563EB).withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                                                  child: const Text('BADMINTON', style: TextStyle(color: Color(0xFF3B82F6), fontSize: 9, fontWeight: FontWeight.bold)),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white.withOpacity(0.2), 
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    border: Border.all(color: Colors.white38, width: 0.5)
+                                                  ),
+                                                  child: const Text('BASKET', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                                                 ),
-                                                const Icon(Icons.bookmark_border, color: Colors.white54, size: 18),
+                                                Container(
+                                                  padding: const EdgeInsets.all(6),
+                                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
+                                                  child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 12),
+                                                ),
                                               ],
                                             ),
-                                            const SizedBox(height: 6),
+                                            const SizedBox(height: 8),
                                             Text(
-                                              ev['title'] ?? 'Event',
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
+                                              ev['title'] ?? 'Event Olahraga',
+                                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white, height: 1.2),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             const SizedBox(height: 6),
                                             Row(
                                               children: [
-                                                const Icon(Icons.calendar_today_outlined, size: 12, color: Colors.white54),
+                                                const Icon(Icons.location_on_rounded, size: 14, color: Colors.amberAccent),
                                                 const SizedBox(width: 4),
-                                                Text('Besok, 18:00 WIB • ', style: const TextStyle(fontSize: 11, color: Colors.white54)),
-                                                Expanded(child: Text(ev['location'] ?? '-', style: const TextStyle(fontSize: 11, color: Colors.white54), overflow: TextOverflow.ellipsis)),
+                                                Expanded(
+                                                  child: Text(
+                                                    ev['location'] ?? 'Lokasi Belum Ditentukan', 
+                                                    style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w500), 
+                                                    overflow: TextOverflow.ellipsis
+                                                  ),
+                                                ),
                                               ],
                                             ),
-                                            const SizedBox(height: 8),
+                                            const SizedBox(height: 10),
                                             Row(
-                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                _buildDummyAvatarStack(count: 12),
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(Icons.access_time_rounded, size: 14, color: Colors.white54),
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: Text(
+                                                          '${ev['date'] != null ? DateTime.parse(ev['date']).toString().split(' ')[0] : 'Besok'}, 19:00', 
+                                                          style: const TextStyle(fontSize: 11, color: Colors.white54, fontWeight: FontWeight.bold),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                _buildDummyAvatarStack(count: 8),
                                               ],
                                             )
                                           ],
@@ -840,7 +918,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         // 📣 BANNER AYO BUAT TIM
                         Container(
                           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                          width: double.infinity,
+                          height: 180,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
@@ -854,6 +934,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text('Ayo Buat Tim!', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
                               const SizedBox(height: 8),

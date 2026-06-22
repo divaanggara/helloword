@@ -15,10 +15,11 @@ class _UserEventScreenState extends State<UserEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F9),
+      backgroundColor: const Color(0xFF0B101E),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E6091),
-        title: const Text('Event Seru Ditonton 🔥', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF0B101E),
+        elevation: 0,
+        title: const Text('Event Seru', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
@@ -36,31 +37,98 @@ class _UserEventScreenState extends State<UserEventScreen> {
                 child: Text(
                   'Belum ada event aktif saat ini.\nTunggu update dari Admin ya! 🙌',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey, fontSize: 16, height: 1.4),
+                  style: TextStyle(color: Colors.white54, fontSize: 16, height: 1.4),
                 ),
               ),
             );
           }
 
-          final listEvent = snapshot.data!;
+          // Filter agar event yang di-request user (group_id != null) tidak masuk ke event utama
+          // dan pastikan status disetujui (event admin mungkin tidak punya status)
+          final listEvent = snapshot.data!.where((e) {
+            final isMainEvent = e['group_id'] == null;
+            final isApproved = e['status'] == null || e['status'] == 'approved';
+            return isMainEvent && isApproved;
+          }).toList();
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(15),
-            itemCount: listEvent.length,
-            itemBuilder: (context, index) {
-              final event = listEvent[index];
-              final rawDateString = event['date'] ?? event['tanggal'];
-              final DateTime dateRaw = rawDateString != null ? DateTime.parse(rawDateString) : DateTime.now();
-              final String formattedDate = "${dateRaw.day}/${dateRaw.month}/${dateRaw.year}";
+          if (listEvent.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  'Belum ada event aktif saat ini.\nTunggu update dari Admin ya! 🙌',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white54, fontSize: 16, height: 1.4),
+                ),
+              ),
+            );
+          }
 
-              return Card(
-                margin: const EdgeInsets.only(bottom: 15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                elevation: 3,
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          return Column(
+            children: [
+              // --- HEADER BANNER FIERY ---
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFEA580C), Color(0xFFDC2626)], // Orange to Red
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: const Color(0xFFDC2626).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))
+                  ],
+                  image: const DecorationImage(
+                    image: NetworkImage('https://www.transparenttextures.com/patterns/cubes.png'),
+                    opacity: 0.15,
+                    repeat: ImageRepeat.repeat,
+                  ),
+                ),
+                child: Row(
                   children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Jelajahi Event Seru! 🔥', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 6),
+                          Text('Ikuti turnamen atau sparring seru di sekitarmu dan kumpulkan poin!', style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                      child: const Icon(Icons.local_fire_department, size: 36, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                  itemCount: listEvent.length,
+                  itemBuilder: (context, index) {
+                    final event = listEvent[index];
+                    final rawDateString = event['date'] ?? event['tanggal'];
+                    final DateTime dateRaw = rawDateString != null ? DateTime.parse(rawDateString) : DateTime.now();
+                    final String formattedDate = "${dateRaw.day}/${dateRaw.month}/${dateRaw.year}";
+
+                    return Card(
+                      color: const Color(0xFF131B2F),
+                      margin: const EdgeInsets.only(bottom: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Colors.white10)),
+                      elevation: 8,
+                      shadowColor: Colors.black.withOpacity(0.5),
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                     Image.network(
                       event['image_url'] ?? '',
                       height: 180,
@@ -69,8 +137,8 @@ class _UserEventScreenState extends State<UserEventScreen> {
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           height: 180,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                          color: const Color(0xFF1E293B),
+                          child: const Icon(Icons.broken_image, size: 50, color: Colors.white24),
                         );
                       },
                     ),
@@ -81,25 +149,25 @@ class _UserEventScreenState extends State<UserEventScreen> {
                         children: [
                           Text(
                             event['title'] ?? event['judul'] ?? 'Event Tanpa Judul',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(Icons.calendar_today, size: 16, color: Color(0xFF1E6091)),
+                              const Icon(Icons.calendar_today, size: 16, color: Color(0xFFF97316)), // Orange
                               const SizedBox(width: 8),
-                              Text(formattedDate, style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.w500)),
+                              Text(formattedDate, style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w500)),
                             ],
                           ),
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              const Icon(Icons.location_on, size: 16, color: Colors.redAccent),
+                              const Icon(Icons.location_on, size: 16, color: Color(0xFFEF4444)), // Red
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   event['location'] ?? event['lokasi'] ?? '-',
-                                  style: TextStyle(color: Colors.grey[700]),
+                                  style: const TextStyle(color: Colors.white70),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -109,7 +177,7 @@ class _UserEventScreenState extends State<UserEventScreen> {
                           const SizedBox(height: 12),
                           Text(
                             event['description'] ?? event['deskripsi'] ?? '-',
-                            style: TextStyle(color: Colors.grey[600], height: 1.4),
+                            style: const TextStyle(color: Colors.white54, height: 1.4),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -172,6 +240,17 @@ class _UserEventScreenState extends State<UserEventScreen> {
                                       'is_paid': false, // Sesuai database awal lu, gratis di-set false/tetap valid di admin
                                     });
 
+                                    // 🚀 TAMBAH POIN & EVENT COUNT DI PROFIL
+                                    final profileData = await supabase.from('profiles').select('total_points, total_events').eq('id', userId).maybeSingle();
+                                    if (profileData != null) {
+                                      int currentPoints = profileData['total_points'] ?? 0;
+                                      int currentEvents = profileData['total_events'] ?? 0;
+                                      await supabase.from('profiles').update({
+                                        'total_points': currentPoints + 10, // Tambah 10 poin
+                                        'total_events': currentEvents + 1,  // Tambah 1 total event
+                                      }).eq('id', userId);
+                                    }
+
                                     if (!context.mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -193,13 +272,14 @@ class _UserEventScreenState extends State<UserEventScreen> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2D6A4F), 
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                elevation: 2,
+                                backgroundColor: const Color(0xFFDC2626), // Hot Red
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 4,
+                                shadowColor: const Color(0xFFDC2626).withOpacity(0.4),
                               ),
                               child: const Text(
                                 'Gabung Event Sekarang',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 0.5),
                               ),
                             ),
                           ),
@@ -210,7 +290,10 @@ class _UserEventScreenState extends State<UserEventScreen> {
                 ),
               );
             },
-          );
+          ),
+        ),
+      ],
+    );
         },
       ),
     );

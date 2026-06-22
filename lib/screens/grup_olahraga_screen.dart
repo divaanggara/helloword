@@ -7,12 +7,18 @@ class GrupOlahragaScreen extends StatefulWidget {
   final String namaGrup;
   final dynamic groupId;
   final Color? warnaGrup;
+  final String? iconUrl;
+  final String? bannerUrl;
+  final String? deskripsi;
 
   const GrupOlahragaScreen({
     Key? key,
     required this.namaGrup,
     required this.groupId,
     this.warnaGrup,
+    this.iconUrl,
+    this.bannerUrl,
+    this.deskripsi,
   }) : super(key: key);
 
   @override
@@ -323,18 +329,26 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
       // Tentukan path gambar banner dengan mencocokkan kata kunci
       String assetPath = _getBannerAssetPath(widget.namaGrup);
 
-      return Column(
-        children: [
-          // 🖼️ BANNER ATAS DENGAN FALLBACK
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            // 🖼️ BANNER ATAS DENGAN FALLBACK
           Stack(
             children: [
-              Image.asset(
-                assetPath,
-                width: double.infinity,
-                height: 220,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
+              widget.bannerUrl != null && widget.bannerUrl!.isNotEmpty
+                  ? Image.network(
+                      widget.bannerUrl!,
+                      width: double.infinity,
+                      height: 220,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(assetPath, width: double.infinity, fit: BoxFit.fitWidth),
+                    )
+                  : Image.asset(
+                      assetPath,
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
                     width: double.infinity,
                     height: 220,
                     decoration: BoxDecoration(
@@ -350,7 +364,9 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.sports, size: 64, color: Colors.white54),
+                        widget.iconUrl != null && widget.iconUrl!.isNotEmpty
+                            ? ClipOval(child: Image.network(widget.iconUrl!, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (c,e,s) => const Icon(Icons.sports, size: 64, color: Colors.white54)))
+                            : const Icon(Icons.sports, size: 64, color: Colors.white54),
                         const SizedBox(height: 8),
                         Text(
                           'Tambahkan asset:\n$assetPath',
@@ -363,18 +379,17 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
                 },
               ),
               // Overlay Gelap
-              Container(
-                width: double.infinity,
-                height: 220,
-                color: Colors.black.withOpacity(0.2),
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.2),
+                ),
               ),
             ],
           ),
           
           // 📝 KONTEN DESKRIPSI & TOMBOL
-          Expanded(
-            child: Container(
-              width: double.infinity,
+          Container(
+            width: double.infinity,
               padding: const EdgeInsets.all(24.0),
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -418,14 +433,11 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
                   ),
                   const SizedBox(height: 8),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Text(
-                        'Selamat datang di komunitas ${widget.namaGrup}! Tempat kumpulnya para penggemar ${widget.namaGrup} sejati.\n\nDi grup ini, lo bisa:\n🔥 Diskusi santai soal hobi olahraga lo\n🤝 Nyari temen buat mabar (main bareng) biar lebih seru\n📅 Ikutan event dan rutinitas bareng anggota lain\n\nBuruan gabung dan jadi bagian dari komunitas aktif kita. Jangan sampai kelewatan obrolan serunya!',
-                        style: const TextStyle(fontSize: 14, color: Color(0xFF64748B), height: 1.6),
-                      ),
-                    ),
+                  Text(
+                    widget.deskripsi != null && widget.deskripsi!.isNotEmpty
+                        ? widget.deskripsi!
+                        : 'Selamat datang di komunitas ${widget.namaGrup}! Tempat kumpulnya para penggemar ${widget.namaGrup} sejati.\n\nDi grup ini, lo bisa:\n🔥 Diskusi santai soal hobi olahraga lo\n🤝 Nyari temen buat mabar (main bareng) biar lebih seru\n📅 Ikutan event dan rutinitas bareng anggota lain\n\nBuruan gabung dan jadi bagian dari komunitas aktif kita. Jangan sampai kelewatan obrolan serunya!',
+                    style: const TextStyle(fontSize: 14, color: Color(0xFF64748B), height: 1.6),
                   ),
                   const SizedBox(height: 16),
                   // TOMBOL GABUNG
@@ -450,8 +462,8 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:latlong2/latlong.dart';
+import 'map_picker_screen.dart';
 
 class AjukanMatchScreen extends StatefulWidget {
   const AjukanMatchScreen({Key? key}) : super(key: key);
@@ -17,6 +19,7 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
   String _selectedLevel = 'Intermediate'; // Default untuk Level Kemampuan
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  LatLng? _selectedLatLng; // 🔥 Variabel untuk titik koordinat
   bool _isLoading = false;
 
   String _userName = 'Pemain';
@@ -121,7 +124,10 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: isSelected ? const Color(0xFF3B82F6) : Colors.blue.shade50,
-                          child: Icon(_getIconGrup(grup['nama_grup']), color: isSelected ? Colors.white : const Color(0xFF3B82F6)),
+                          backgroundImage: grup['icon_url'] != null && grup['icon_url'].toString().isNotEmpty ? NetworkImage(grup['icon_url']) : null,
+                          child: grup['icon_url'] != null && grup['icon_url'].toString().isNotEmpty
+                              ? null
+                              : Icon(_getIconGrup(grup['nama_grup']), color: isSelected ? Colors.white : const Color(0xFF3B82F6)),
                         ),
                         title: Text(grup['nama_grup'], style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF3B82F6) : Colors.black87)),
                         trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFF3B82F6)) : const Icon(Icons.chevron_right, color: Colors.grey),
@@ -251,6 +257,8 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
       await Supabase.instance.client.from('events').insert({
         'judul': finalJudul,
         'lokasi': lokasi,
+        'latitude': _selectedLatLng?.latitude,
+        'longitude': _selectedLatLng?.longitude,
         'tanggal': gabunganWaktu.toIso8601String(),
         'group_id': _selectedGroup,
         'status': 'pending', // Menunggu persetujuan admin
@@ -269,6 +277,7 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
         _catatanController.clear();
         _selectedDate = null;
         _selectedTime = null;
+        _selectedLatLng = null;
       });
 
     } catch (e) {
@@ -286,11 +295,11 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Container(width: 4, height: 16, decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(2))),
+          Container(width: 4, height: 16, decoration: BoxDecoration(color: const Color(0xFF8B5CF6), borderRadius: BorderRadius.circular(2))),
           const SizedBox(width: 8),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF1E293B))),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white)),
           if (isOptional)
-            const Text(' (Opsional)', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            const Text(' (Opsional)', style: TextStyle(fontSize: 13, color: Colors.white38)),
         ],
       ),
     );
@@ -308,9 +317,9 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
               decoration: BoxDecoration(
-                color: isSelected ? color.withOpacity(0.05) : Colors.white,
+                color: isSelected ? color.withOpacity(0.15) : const Color(0xFF131B2F),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isSelected ? color : Colors.grey.shade200, width: isSelected ? 1.5 : 1),
+                border: Border.all(color: isSelected ? color : Colors.white10, width: isSelected ? 1.5 : 1),
               ),
               child: Column(
                 children: [
@@ -320,8 +329,8 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                     child: Icon(icon, color: color, size: 22),
                   ),
                   const SizedBox(height: 8),
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isSelected ? color : Colors.black87)),
-                  Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.grey), textAlign: TextAlign.center),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isSelected ? color : Colors.white)),
+                  Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.white54), textAlign: TextAlign.center),
                 ],
               ),
             ),
@@ -331,7 +340,7 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                 right: -6,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(color: const Color(0xFF2563EB), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: const Color(0xFF8B5CF6), borderRadius: BorderRadius.circular(8)),
                   child: const Row(
                     children: [
                       Icon(Icons.thumb_up, color: Colors.white, size: 8),
@@ -440,13 +449,13 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF1E3A8A), Color(0xFF312E81)],
+                              colors: [Color(0xFF8B5CF6), Color(0xFFDB2777)], // Neon Purple to Hot Pink
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
-                              BoxShadow(color: Colors.blue.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 8))
+                              BoxShadow(color: const Color(0xFFDB2777).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))
                             ],
                             image: const DecorationImage(
                               image: NetworkImage('https://www.transparenttextures.com/patterns/stardust.png'), // Efek bintang
@@ -484,7 +493,7 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
             child: Container(
               transform: Matrix4.translationValues(0, -20, 0), // Narik putih ke atas buat efek tumpang tindih
               decoration: const BoxDecoration(
-                color: Color(0xFFF8FAFC),
+                color: Color(0xFF0B101E),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               padding: const EdgeInsets.all(20),
@@ -544,10 +553,10 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                                 width: 85,
                                 margin: const EdgeInsets.only(right: 12),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+                                  color: isSelected ? const Color(0xFF8B5CF6).withOpacity(0.15) : const Color(0xFF131B2F),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: isSelected ? const Color(0xFF3B82F6) : Colors.grey.shade200, width: isSelected ? 1.5 : 1),
-                                  boxShadow: isSelected ? [BoxShadow(color: Colors.blue.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))] : null,
+                                  border: Border.all(color: isSelected ? const Color(0xFF8B5CF6) : Colors.white10, width: isSelected ? 1.5 : 1),
+                                  boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF8B5CF6).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : null,
                                 ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -555,10 +564,20 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFF1F5F9),
+                                        color: isSelected ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.05),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(_getIconGrup(kat['nama_grup']), color: isSelected ? Colors.white : const Color(0xFF475569), size: 22),
+                                      child: kat['icon_url'] != null && kat['icon_url'].toString().isNotEmpty
+                                          ? ClipOval(
+                                              child: Image.network(
+                                                kat['icon_url'],
+                                                width: 22,
+                                                height: 22,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) => Icon(_getIconGrup(kat['nama_grup']), color: isSelected ? Colors.white : Colors.white70, size: 22),
+                                              ),
+                                            )
+                                          : Icon(_getIconGrup(kat['nama_grup']), color: isSelected ? Colors.white : Colors.white70, size: 22),
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
@@ -566,7 +585,7 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                        color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                                        color: isSelected ? const Color(0xFF8B5CF6) : Colors.white70,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -584,14 +603,15 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                   _buildSectionTitle('Judul Event'),
                   TextField(
                     controller: _judulController,
+                    style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Misal: Sparring Santai Malam Minggu',
-                      hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+                      hintStyle: const TextStyle(fontSize: 13, color: Colors.white38),
                       filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.title, color: Colors.grey, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                      fillColor: const Color(0xFF131B2F),
+                      prefixIcon: const Icon(Icons.title, color: Colors.white54, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
@@ -609,18 +629,18 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                               onTap: () => _pilihTanggal(context),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
+                                decoration: BoxDecoration(color: const Color(0xFF131B2F), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white10)),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
                                       children: [
-                                        const Icon(Icons.calendar_month_outlined, color: Color(0xFF64748B), size: 18),
+                                        const Icon(Icons.calendar_month_outlined, color: Colors.white54, size: 18),
                                         const SizedBox(width: 8),
-                                        Text(_selectedDate == null ? 'Pilih tanggal' : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}', style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w600)),
+                                        Text(_selectedDate == null ? 'Pilih tanggal' : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
-                                    const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
+                                    const Icon(Icons.chevron_right, color: Colors.white38, size: 18),
                                   ],
                                 ),
                               ),
@@ -638,18 +658,18 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                               onTap: () => _pilihJam(context),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
+                                decoration: BoxDecoration(color: const Color(0xFF131B2F), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white10)),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
                                       children: [
-                                        const Icon(Icons.access_time, color: Color(0xFF64748B), size: 18),
+                                        const Icon(Icons.access_time, color: Colors.white54, size: 18),
                                         const SizedBox(width: 8),
-                                        Text(_selectedTime == null ? 'Pilih waktu' : _selectedTime!.format(context), style: const TextStyle(color: Color(0xFF475569), fontSize: 13, fontWeight: FontWeight.w600)),
+                                        Text(_selectedTime == null ? 'Pilih waktu' : _selectedTime!.format(context), style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
                                       ],
                                     ),
-                                    const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
+                                    const Icon(Icons.chevron_right, color: Colors.white38, size: 18),
                                   ],
                                 ),
                               ),
@@ -663,25 +683,57 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
 
                   // SECTION 3: LOKASI
                   _buildSectionTitle('Lokasi Lapangan'),
-                  Container(
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _lokasiController,
-                          decoration: const InputDecoration(
-                            hintText: 'Pilih area atau lapangan',
-                            hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
-                            prefixIcon: Icon(Icons.location_on_outlined, color: Colors.grey, size: 20),
-                            suffixIcon: Icon(Icons.keyboard_arrow_down, color: Colors.grey),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(color: const Color(0xFF131B2F), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white10)),
+                          child: TextField(
+                            controller: _lokasiController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: 'Pilih area atau lapangan',
+                              hintStyle: TextStyle(fontSize: 13, color: Colors.white38),
+                              prefixIcon: Icon(Icons.location_on_outlined, color: Colors.white54, size: 20),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 14),
+                            ),
                           ),
                         ),
-                        // DUMMY MAP DIHAPUS SESUAI PERMINTAAN USER
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8B5CF6),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.map, color: Colors.white),
+                          onPressed: () async {
+                            final LatLng? result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MapPickerScreen(initialLocation: _selectedLatLng),
+                              ),
+                            );
+                            if (result != null) {
+                              setState(() {
+                                _selectedLatLng = result;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
+                  if (_selectedLatLng != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        '📍 Koordinat Peta: ${_selectedLatLng!.latitude.toStringAsFixed(4)}, ${_selectedLatLng!.longitude.toStringAsFixed(4)}',
+                        style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   const SizedBox(height: 24),
 
                   // SECTION 4: LEVEL KEMAMPUAN
@@ -702,17 +754,18 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                   TextField(
                     controller: _catatanController,
                     maxLines: 3,
+                    style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Contoh: Cari lawan sparring santai, patungan lapangan rata.',
-                      hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+                      hintStyle: const TextStyle(fontSize: 13, color: Colors.white38),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: const Color(0xFF131B2F),
                       prefixIcon: const Padding(
                         padding: EdgeInsets.only(bottom: 40),
-                        child: Icon(Icons.edit, color: Colors.grey, size: 18),
+                        child: Icon(Icons.edit, color: Colors.white54, size: 18),
                       ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -728,11 +781,11 @@ class _AjukanMatchScreenState extends State<AjukanMatchScreen> {
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                           : const Text('Submit Request', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4F46E5), // Indigo vibrant
+                        backgroundColor: const Color(0xFF8B5CF6), // Neon Purple vibrant
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                         elevation: 6,
-                        shadowColor: const Color(0xFF4F46E5).withOpacity(0.5),
+                        shadowColor: const Color(0xFF8B5CF6).withOpacity(0.5),
                       ),
                     ),
                   ),

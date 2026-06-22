@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart'; // 👈 Pastikan baris ini ada di paling atas file!
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'invoice_screen.dart'; 
 
 class EventDetailScreen extends StatefulWidget {
@@ -37,7 +39,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           .select('''
             user_id,
             is_paid,
-            profiles ( nama_lengkap )
+            profiles ( nama_lengkap, total_points )
           ''')
           .eq('event_id', eventId);
 
@@ -83,6 +85,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     final location = widget.event['location'] ?? widget.event['lokasi'] ?? 'Lokasi Menyusul';
     final date = widget.event['date'] ?? widget.event['tanggal'] ?? '';
     final price = widget.event['price'] ?? widget.event['harga'] ?? 0;
+    
+    // Ambil koordinat
+    final double? latitude = widget.event['latitude'] != null ? double.tryParse(widget.event['latitude'].toString()) : null;
+    final double? longitude = widget.event['longitude'] != null ? double.tryParse(widget.event['longitude'].toString()) : null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -138,6 +144,47 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         ),
                       ],
                     ),
+                    if (latitude != null && longitude != null) ...[
+                      const SizedBox(height: 20),
+                      const Text('Peta Lokasi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 10),
+                      Container(
+                        height: 200,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: FlutterMap(
+                          options: MapOptions(
+                            initialCenter: LatLng(latitude, longitude),
+                            initialZoom: 15.0,
+                            interactionOptions: const InteractionOptions(flags: InteractiveFlag.none), // Peta statis agar scroll layar tidak terganggu
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'com.titikkumpul.app',
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: LatLng(latitude, longitude),
+                                  width: 40,
+                                  height: 40,
+                                  child: const Icon(
+                                    Icons.location_on,
+                                    color: Colors.red,
+                                    size: 40,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -190,6 +237,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           // Ngekstrak nama_lengkap dari relasi profiles
                           final profil = p['profiles'] as Map<String, dynamic>?;
                           final namaPemain = profil?['nama_lengkap'] ?? 'User Tanpa Nama';
+                          final totalPoints = profil?['total_points'] ?? 0;
                           final isPaid = p['is_paid'] == true;
 
                           return ListTile(
@@ -198,7 +246,17 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               backgroundColor: Color(0xFFE8F1F8),
                               child: Icon(Icons.sports_soccer, color: Color(0xFF1E5F94)),
                             ),
-                            title: Text(namaPemain, style: const TextStyle(fontWeight: FontWeight.w500)),
+                            title: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(namaPemain, style: const TextStyle(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                                ),
+                                if (totalPoints >= 1000) ...[
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.workspace_premium, color: Colors.amber, size: 18),
+                                ]
+                              ],
+                            ),
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
