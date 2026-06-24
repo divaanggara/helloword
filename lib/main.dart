@@ -6,7 +6,11 @@ import 'screens/splash_screen.dart'; // Jalur import ke splash screen
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: ".env");
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("Warning: .env file not found. Please create one based on .env.example");
+  }
 
   await Supabase.initialize(
     url: 'https://mjbpjtwlgwytiolvlkhn.supabase.co',

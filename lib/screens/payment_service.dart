@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MidtransService {
-
   static Future<String?> dapatkanLinkPembayaran({
     required String orderId,
     required int grossAmount,
@@ -11,16 +10,14 @@ class MidtransService {
   }) async {
     // Endpoint API Midtrans Sandbox
     const String url = 'https://app.sandbox.midtrans.com/snap/v1/transactions';
-    
+
     // Syarat dari Midtrans: Server Key harus di-encode pakai Base64
     final String serverKey = dotenv.env['MIDTRANS_SERVER_KEY'] ?? '';
-    final String basicAuth = 'Basic ${base64Encode(utf8.encode('$serverKey:'))}';
+    final String basicAuth =
+        'Basic ${base64Encode(utf8.encode('$serverKey:'))}';
 
     final Map<String, dynamic> body = {
-      "transaction_details": {
-        "order_id": orderId,
-        "gross_amount": grossAmount
-      },
+      "transaction_details": {"order_id": orderId, "gross_amount": grossAmount},
       "item_details": [
         {
           "id": "TIKET-01",
@@ -50,7 +47,7 @@ class MidtransService {
       if (response.statusCode == 201 || response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         // Ngambil link URL halaman pembayaran dari Midtrans
-        return responseData['redirect_url']; 
+        return responseData['redirect_url'];
       } else {
         print('Error Midtrans: ${response.body}');
         return null;
