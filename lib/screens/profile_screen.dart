@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'login_screen.dart'; // Import login screen untuk fungsi Keluar
 import 'my_events_screen.dart'; // Import layar riwayat event
+import 'leaderboard_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -22,6 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _email = 'memuat...';
   String? _avatarUrl;
   int _totalPoints = 0;
+  int _peringkat = 0;
   int _totalEvents = 0;
   int _totalCampaign = 0;
   StreamSubscription<List<Map<String, dynamic>>>? _profileSubscription;
@@ -44,27 +46,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _profileSubscription = _supabase
           .from('profiles')
           .stream(primaryKey: ['id'])
-          .eq('id', user.id)
           .listen((data) async {
         if (data.isNotEmpty) {
-          final profile = data.first;
+          // Urutkan data berdasarkan total_points secara descending
+          data.sort((a, b) => (b['total_points'] ?? 0).compareTo(a['total_points'] ?? 0));
           
-          // Mengambil total event dinamis dari history
-          final eventData = await _supabase
-              .from('event_participants')
-              .select('id')
-              .eq('user_id', user.id);
+          final userIndex = data.indexWhere((p) => p['id'] == user.id);
+          final profile = userIndex != -1 ? data[userIndex] : null;
+          final int rank = userIndex != -1 ? userIndex + 1 : 0;
 
-          if (mounted) {
-            setState(() {
-              _namaLengkap = profile['nama_lengkap'] ?? 'User';
-              _email = profile['email'] ?? user.email ?? 'Tidak ada email';
-              _avatarUrl = profile['avatar_url'];
-              _totalPoints = profile['total_points'] ?? 0;
-              _totalEvents = (eventData as List).length; 
-              _totalCampaign = profile['total_campaign'] ?? 0;
-              _isLoading = false;
-            });
+          if (profile != null) {
+            // Mengambil total event dinamis dari history
+            final eventData = await _supabase
+                .from('event_participants')
+                .select('id')
+                .eq('user_id', user.id);
+
+            if (mounted) {
+              setState(() {
+                _namaLengkap = profile['nama_lengkap'] ?? 'User';
+                _email = profile['email'] ?? user.email ?? 'Tidak ada email';
+                _avatarUrl = profile['avatar_url'];
+                _totalPoints = profile['total_points'] ?? 0;
+                _peringkat = rank;
+                _totalEvents = (eventData as List).length; 
+                _totalCampaign = profile['total_campaign'] ?? 0;
+                _isLoading = false;
+              });
+            }
           }
         }
       }, onError: (error) {
@@ -457,11 +466,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildStatItem('$_totalPoints', 'Total Points'),
+                          Expanded(child: _buildStatItem('$_totalPoints', 'Points')),
                           _buildDivider(),
-                          _buildStatItem('$_totalEvents', 'Total Events'),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => const LeaderboardScreen()));
+                              },
+                              child: _buildStatItem('#$_peringkat', 'Peringkat', valueColor: Colors.amber),
+                            ),
+                          ),
                           _buildDivider(),
-                          _buildStatItem('$_totalCampaign', 'Total Campaign'),
+                          Expanded(child: _buildStatItem('$_totalEvents', 'Events')),
+                          _buildDivider(),
+                          Expanded(child: _buildStatItem('$_totalCampaign', 'Campaign')),
                         ],
                       ),
                     ),
@@ -489,6 +507,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           }),
                           _buildMenuDivider(),
                           _buildMenuItem(Icons.emoji_events_outlined, 'Pencapaianku', onTap: _tampilkanPencapaian),
+                          _buildMenuDivider(),
+                          _buildMenuItem(Icons.leaderboard_outlined, 'Papan Peringkat', onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const LeaderboardScreen()));
+                          }),
                           _buildMenuDivider(),
                           _buildMenuItem(Icons.vpn_key_outlined, 'Ganti Password', onTap: _tampilkanDialogGantiPassword),
                         ],
@@ -554,17 +576,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Widget helper untuk statistik angka
-  Widget _buildStatItem(String value, String label) {
+  Widget _buildStatItem(String value, String label, {Color? valueColor}) {
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: valueColor ?? Colors.white),
         ),
         const SizedBox(height: 6),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w500),
+          textAlign: TextAlign.center,
         ),
       ],
     );
