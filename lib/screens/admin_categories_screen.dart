@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 
 class AdminCategoriesScreen extends StatefulWidget {
-  const AdminCategoriesScreen({Key? key}) : super(key: key);
+  const AdminCategoriesScreen({super.key});
 
   @override
   State<AdminCategoriesScreen> createState() => _AdminCategoriesScreenState();
@@ -74,12 +74,12 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                               : null,
                         ),
                         child: bannerBytes == null
-                            ? Column(
+                            ? const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF94A3B8), size: 32),
-                                  const SizedBox(height: 8),
-                                  const Text('Upload Banner Grup (Opsional)', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                                  Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF94A3B8), size: 32),
+                                  SizedBox(height: 8),
+                                  Text('Upload Banner Grup (Opsional)', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                                 ],
                               )
                             : null,
@@ -290,12 +290,12 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                                   : null,
                         ),
                         child: bannerBytes == null && (currentBannerUrl == null || currentBannerUrl.isEmpty)
-                            ? Column(
+                            ? const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF94A3B8), size: 32),
-                                  const SizedBox(height: 8),
-                                  const Text('Upload Banner Grup (Opsional)', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                                  Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF94A3B8), size: 32),
+                                  SizedBox(height: 8),
+                                  Text('Upload Banner Grup (Opsional)', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                                 ],
                               )
                             : null,

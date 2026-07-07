@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'invoice_screen.dart';
 
 class UserEventScreen extends StatefulWidget {
-  const UserEventScreen({Key? key}) : super(key: key);
+  const UserEventScreen({super.key});
 
   @override
   State<UserEventScreen> createState() => _UserEventScreenState();
@@ -89,12 +89,12 @@ class _UserEventScreenState extends State<UserEventScreen> {
                 ),
                 child: Row(
                   children: [
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Jelajahi Event Seru! 🔥', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 6),
+                          Text('Jelajahi Event Seru! 🔥', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 6),
                           Text('Ikuti turnamen atau sparring seru di sekitarmu dan kumpulkan poin!', style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4)),
                         ],
                       ),

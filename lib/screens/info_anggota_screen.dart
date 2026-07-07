@@ -6,10 +6,10 @@ class InfoAnggotaScreen extends StatefulWidget {
   final dynamic groupId;
 
   const InfoAnggotaScreen({
-    Key? key,
+    super.key,
     required this.namaGrup,
     required this.groupId,
-  }) : super(key: key);
+  });
 
   @override
   State<InfoAnggotaScreen> createState() => _InfoAnggotaScreenState();

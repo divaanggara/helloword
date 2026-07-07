@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminUsersScreen extends StatefulWidget {
-  const AdminUsersScreen({Key? key}) : super(key: key);
+  const AdminUsersScreen({super.key});
 
   @override
   State<AdminUsersScreen> createState() => _AdminUsersScreenState();
@@ -141,7 +141,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         ),
                         Switch(
                           value: isBanned,
-                          activeColor: Colors.white,
+                          activeThumbColor: Colors.white,
                           activeTrackColor: const Color(0xFFEF4444), // Red for banned
                           inactiveThumbColor: Colors.white,
                           inactiveTrackColor: const Color(0xFFCBD5E1), // Gray for not banned

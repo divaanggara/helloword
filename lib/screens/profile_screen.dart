@@ -7,7 +7,7 @@ import 'login_screen.dart'; // Import login screen untuk fungsi Keluar
 import 'my_events_screen.dart'; // Import layar riwayat event
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -304,14 +304,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: const Text('Notifikasi Event Baru'),
                 subtitle: const Text('Dapatkan info saat admin buat event'),
                 value: true,
-                activeColor: const Color(0xFF2563EB),
+                activeThumbColor: const Color(0xFF2563EB),
                 onChanged: (val) { Navigator.pop(context); }, // Cuma UI dummy sementara
               ),
               SwitchListTile(
                 title: const Text('Notifikasi Match Teman'),
                 subtitle: const Text('Info ajakan mabar olahraga'),
                 value: true,
-                activeColor: const Color(0xFF2563EB),
+                activeThumbColor: const Color(0xFF2563EB),
                 onChanged: (val) { Navigator.pop(context); },
               ),
               const SizedBox(height: 16),

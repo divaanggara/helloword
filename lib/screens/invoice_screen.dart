@@ -7,7 +7,7 @@ import 'payment_service.dart'; // Import kurir Midtrans kita
 class InvoiceScreen extends StatefulWidget {
   final Map<String, dynamic> event;
 
-  const InvoiceScreen({Key? key, required this.event}) : super(key: key);
+  const InvoiceScreen({super.key, required this.event});
 
   @override
   State<InvoiceScreen> createState() => _InvoiceScreenState();
@@ -93,7 +93,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   Widget build(BuildContext context) {
     final title = widget.event['title'] ?? widget.event['nama'] ?? 'Pertandingan';
     final price = widget.event['price'] ?? widget.event['harga'] ?? 0;
-    final adminFee = 2500; 
+    const adminFee = 2500; 
     final totalPembayaran = price + adminFee;
 
     return Scaffold(

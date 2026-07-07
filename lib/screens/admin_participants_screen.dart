@@ -6,10 +6,10 @@ class AdminParticipantsScreen extends StatefulWidget {
   final String eventTitle;
 
   const AdminParticipantsScreen({
-    Key? key,
+    super.key,
     required this.eventId,
     required this.eventTitle,
-  }) : super(key: key);
+  });
 
   @override
   State<AdminParticipantsScreen> createState() => _AdminParticipantsScreenState();

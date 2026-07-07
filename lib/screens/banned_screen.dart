@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'login_screen.dart';
 
 class BannedScreen extends StatelessWidget {
-  const BannedScreen({Key? key}) : super(key: key);
+  const BannedScreen({super.key});
 
   void _hubungiAdmin() async {
     final Uri emailLaunchUri = Uri(
@@ -98,17 +98,17 @@ class BannedScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                child: Row(
+                child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline_rounded, color: Color(0xFF64748B), size: 20),
-                    const SizedBox(width: 12),
+                    Icon(Icons.info_outline_rounded, color: Color(0xFF64748B), size: 20),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Jika Anda merasa ini adalah sebuah kesalahan, Anda dapat mengajukan banding dengan menghubungi tim dukungan kami.',
                         style: TextStyle(
                           fontSize: 13,
-                          color: const Color(0xFF475569),
+                          color: Color(0xFF475569),
                           height: 1.5,
                         ),
                       ),

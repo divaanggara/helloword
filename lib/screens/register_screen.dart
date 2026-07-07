@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -204,7 +204,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   _buildInputLabel('Olahraga Favorit'),
                   DropdownButtonFormField<String>(
-                    value: _olahragaFavorit,
+                    initialValue: _olahragaFavorit,
                     icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.sports_soccer, color: Color(0xFF64748B), size: 20),

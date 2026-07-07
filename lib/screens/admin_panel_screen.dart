@@ -7,7 +7,7 @@ import 'admin_categories_screen.dart';
 import 'admin_users_screen.dart';
 
 class AdminPanelScreen extends StatefulWidget {
-  const AdminPanelScreen({Key? key}) : super(key: key);
+  const AdminPanelScreen({super.key});
 
   @override
   State<AdminPanelScreen> createState() => _AdminPanelScreenState();
@@ -674,7 +674,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         const SizedBox(height: 4),
                         Switch(
                           value: sudahBayar,
-                          activeColor: Colors.white,
+                          activeThumbColor: Colors.white,
                           activeTrackColor: const Color(0xFF22C55E),
                           inactiveThumbColor: Colors.white,
                           inactiveTrackColor: const Color(0xFFCBD5E1),

@@ -6,7 +6,7 @@ import 'event_screen.dart'; // 🔥 1. IMPORT FILE EVENT SCREEN-NYA DI SINI BRO!
 
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({Key? key}) : super(key: key);
+  const MainNavigation({super.key});
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();

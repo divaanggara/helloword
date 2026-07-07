@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'admin_panel_screen.dart';
-import 'beranda_screen.dart'; 
 import 'main_navigation.dart';
 import 'register_screen.dart'; 
 import 'banned_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -289,14 +288,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
 
                     // ➖ PEMISAH (ATAU MASUK DENGAN)
-                    Row(
+                    const Row(
                       children: [
-                        const Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-                        const Padding(
+                        Expanded(child: Divider(color: Color(0xFFE2E8F0))),
+                        Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.0),
                           child: Text('Atau masuk dengan', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                         ),
-                        const Expanded(child: Divider(color: Color(0xFFE2E8F0))),
+                        Expanded(child: Divider(color: Color(0xFFE2E8F0))),
                       ],
                     ),
                     const SizedBox(height: 24),
