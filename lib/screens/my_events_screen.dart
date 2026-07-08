@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'event_detail_screen.dart'; // 💡 Mengarah ke halaman detail yang kita buat tadi
 
 class MyEventsScreen extends StatefulWidget {
-  const MyEventsScreen({Key? key}) : super(key: key);
+  const MyEventsScreen({super.key});
 
   @override
   State<MyEventsScreen> createState() => _MyEventsScreenState();

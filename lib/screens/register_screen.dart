@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -13,21 +13,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _namaController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   
-  String _olahragaFavorit = 'Futsal'; 
+  final String _olahragaFavorit = 'Futsal'; 
   bool _isLoading = false;
   bool _obscureText = true;
+  bool _obscureConfirm = true;
+  bool _agreeTerms = false;
 
-  final List<String> _listOlahraga = ['Futsal', 'Badminton', 'Basket', 'Jogging'];
 
-  // 🚀 FUNGSI DAFTAR AKUN KE SUPABASE
+
+  // 🚀 FUNGSI DAFTAR AKUN KE SUPABASE (LOGIKA ASLI 100%)
   Future<void> _prosesRegister() async {
     final nama = _namaController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
     if (nama.isEmpty || email.isEmpty || password.isEmpty) {
       _showSnackBar('Semua data wajib diisi ya bro!', Colors.orange);
+      return;
+    }
+
+    if (password != confirmPassword) {
+      _showSnackBar('Password dan Konfirmasi Password tidak sama!', Colors.orange);
+      return;
+    }
+
+    if (!_agreeTerms) {
+      _showSnackBar('Kamu harus menyetujui Syarat & Ketentuan!', Colors.orange);
       return;
     }
 
@@ -82,248 +96,283 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _namaController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  Widget _buildInputLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      backgroundColor: const Color(0xFFFCF9F8),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🖼️ HEADER IMAGE (MANGGIL ASSET LOKAL)
-            Container(
-              height: 240,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/poster_register.jpg'), // 👈 Nama & path file asset lu bro!
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, const Color(0xFF1E3A8A).withOpacity(0.85)],
-                  ),
-                ),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            // 🔝 TOP APP BAR
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: SizedBox(
+                height: 56,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'TitikKumpul',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -0.5),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back, color: Color(0xFF454652)),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Temukan teman olahraga dan komunitas sehat di sekitarmu.',
-                      style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.7), height: 1.4), // Fix typo bro!
+                    const Text(
+                      'Titik Kumpul',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF24389C),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.help_outline, color: Color(0xFF454652)),
                     ),
                   ],
                 ),
               ),
             ),
 
-            // 📝 LAYOUT FORM UTAMA
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Buat Akun', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                  const SizedBox(height: 6),
-                  const Text('Lengkapi data diri untuk mulai bergabung dengan komunitas.', style: TextStyle(fontSize: 14, color: Color(0xFF64748B))),
-                  const SizedBox(height: 28),
-
-                  _buildInputLabel('Nama Lengkap'),
-                  TextField(
-                    controller: _namaController,
-                    decoration: InputDecoration(
-                      hintText: 'Masukkan nama lengkap',
-                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                      prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF64748B), size: 20),
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  _buildInputLabel('Alamat Email'),
-                  TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: 'contoh@email.com',
-                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                      prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF64748B), size: 20),
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  _buildInputLabel('Password'),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: _obscureText,
-                    decoration: InputDecoration(
-                      hintText: 'Minimal 8 karakter',
-                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF64748B), size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF94A3B8), size: 20),
-                        onPressed: () => setState(() => _obscureText = !_obscureText),
+            // 📝 MAIN CONTENT
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 24),
+                    // Header
+                    const Text(
+                      'DAFTAR',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1B1C1C),
+                        letterSpacing: -0.3,
                       ),
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  _buildInputLabel('Olahraga Favorit'),
-                  DropdownButtonFormField<String>(
-                    value: _olahragaFavorit,
-                    icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B)),
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.sports_soccer, color: Color(0xFF64748B), size: 20),
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                    ),
-                    items: _listOlahraga.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value, style: const TextStyle(fontSize: 15, color: Color(0xFF0F172A))),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        _olahragaFavorit = newValue!;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 28),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB), 
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Buat akun untuk mulai bermain',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF454652),
                       ),
-                      onPressed: _isLoading ? null : _prosesRegister,
-                      child: _isLoading
-                          ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('Register', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward, color: Colors.white, size: 18),
-                              ],
-                            ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  Center(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-                      },
-                      child: RichText(
-                        text: const TextSpan(
-                          text: 'Already have an account? ',
-                          style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                    // 🔵 GOOGLE SIGN UP BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton(
+                        onPressed: () {}, // Placeholder
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Color(0xFFC5C5D4)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 1,
+                          shadowColor: Colors.black.withValues(alpha: 0.05),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            TextSpan(
-                              text: 'Login',
-                              style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold),
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CustomPaint(painter: _GoogleLogoPainter()),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Daftar dengan Google',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1B1C1C),
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                          decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(16)),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(color: const Color(0xFF22C55E).withOpacity(0.1), shape: BoxShape.circle),
-                                child: const Icon(Icons.people, color: Color(0xFF22C55E), size: 18),
-                              ),
-                              const SizedBox(width: 10),
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('500+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A))),
-                                  Text('Komunitas', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                                ],
-                              )
-                            ],
+                    // ➖ DIVIDER
+                    const Row(
+                      children: [
+                        Expanded(child: Divider(color: Color(0xFFC5C5D4))),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            'ATAU DAFTAR DENGAN EMAIL',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF454652),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Color(0xFFC5C5D4))),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 👤 NAMA LENGKAP INPUT
+                    TextField(
+                      controller: _namaController,
+                      style: const TextStyle(fontSize: 16, color: Color(0xFF1B1C1C)),
+                      decoration: _buildInputDecoration('Nama Lengkap'),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ✉️ EMAIL INPUT
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: const TextStyle(fontSize: 16, color: Color(0xFF1B1C1C)),
+                      decoration: _buildInputDecoration('Email'),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 🔑 PASSWORD INPUT
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _obscureText,
+                      style: const TextStyle(fontSize: 16, color: Color(0xFF1B1C1C)),
+                      decoration: _buildInputDecoration('Password').copyWith(
+                        suffixIcon: IconButton(
+                          onPressed: () => setState(() => _obscureText = !_obscureText),
+                          icon: Icon(
+                            _obscureText ? Icons.visibility : Icons.visibility_off,
+                            color: const Color(0xFF454652),
+                            size: 22,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                          decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(16)),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(color: const Color(0xFF3B82F6).withOpacity(0.1), shape: BoxShape.circle),
-                                child: const Icon(Icons.calendar_month, color: Color(0xFF3B82F6), size: 18),
-                              ),
-                              const SizedBox(width: 10),
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('2k+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A))),
-                                  Text('Main Bareng', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                                ],
-                              )
-                            ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 🔑 KONFIRMASI PASSWORD INPUT
+                    TextField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirm,
+                      style: const TextStyle(fontSize: 16, color: Color(0xFF1B1C1C)),
+                      decoration: _buildInputDecoration('Konfirmasi Password').copyWith(
+                        suffixIcon: IconButton(
+                          onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                          icon: Icon(
+                            _obscureConfirm ? Icons.visibility : Icons.visibility_off,
+                            color: const Color(0xFF454652),
+                            size: 22,
                           ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ✅ SYARAT & KETENTUAN CHECKBOX
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Checkbox(
+                            value: _agreeTerms,
+                            onChanged: (val) => setState(() => _agreeTerms = val ?? false),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                            side: const BorderSide(color: Color(0xFF757684)),
+                            activeColor: const Color(0xFF24389C),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _agreeTerms = !_agreeTerms),
+                            child: RichText(
+                              text: const TextSpan(
+                                text: 'Saya menyetujui ',
+                                style: TextStyle(fontSize: 14, color: Color(0xFF454652)),
+                                children: [
+                                  TextSpan(
+                                    text: 'Syarat & Ketentuan',
+                                    style: TextStyle(
+                                      color: Color(0xFF24389C),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 🔘 TOMBOL DAFTAR
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _prosesRegister,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF24389C),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          elevation: 4,
+                          shadowColor: const Color(0xFF3F51B5).withValues(alpha: 0.15),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text(
+                                'Daftar',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+
+            // 🔗 LINK LOGIN (di bawah layar)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                },
+                child: RichText(
+                  text: const TextSpan(
+                    text: 'Sudah punya akun?  ',
+                    style: TextStyle(color: Color(0xFF454652), fontSize: 14),
+                    children: [
+                      TextSpan(
+                        text: 'Login',
+                        style: TextStyle(
+                          color: Color(0xFF24389C),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ],
@@ -331,4 +380,68 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
+
+  InputDecoration _buildInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(fontSize: 14, color: Color(0xFF454652)),
+      floatingLabelStyle: const TextStyle(fontSize: 12, color: Color(0xFF24389C)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF757684)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF24389C), width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+    );
+  }
+}
+
+// 🎨 Google Logo Painter (self-contained)
+class _GoogleLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double w = size.width;
+    final double cy = size.height / 2;
+    final double cx = w / 2;
+    final double r = w * 0.45;
+
+    final bluePaint = Paint()
+      ..color = const Color(0xFF4285F4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * 0.18
+      ..strokeCap = StrokeCap.butt;
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r), -0.8, 1.6, false, bluePaint);
+
+    final greenPaint = Paint()
+      ..color = const Color(0xFF34A853)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * 0.18
+      ..strokeCap = StrokeCap.butt;
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r), 0.8, 1.2, false, greenPaint);
+
+    final yellowPaint = Paint()
+      ..color = const Color(0xFFFBBC05)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * 0.18
+      ..strokeCap = StrokeCap.butt;
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r), 2.0, 1.2, false, yellowPaint);
+
+    final redPaint = Paint()
+      ..color = const Color(0xFFEA4335)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * 0.18
+      ..strokeCap = StrokeCap.butt;
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r), 3.2, 1.3, false, redPaint);
+
+    final barPaint = Paint()
+      ..color = const Color(0xFF4285F4)
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(Rect.fromLTWH(cx, cy - w * 0.09, r + w * 0.05, w * 0.18), barPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

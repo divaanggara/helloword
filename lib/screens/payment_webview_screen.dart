@@ -7,7 +7,7 @@ class PaymentManualScreen extends StatefulWidget {
   // Kita ganti namanya jadi invoice biar sinkron sama data yang dikirim dari InvoiceScreen
   final Map<String, dynamic> event; 
 
-  const PaymentManualScreen({Key? key, required this.event}) : super(key: key);
+  const PaymentManualScreen({super.key, required this.event});
 
   @override
   State<PaymentManualScreen> createState() => _PaymentManualScreenState();
@@ -124,13 +124,13 @@ class _PaymentManualScreenState extends State<PaymentManualScreen> {
                     const Divider(height: 24),
                     const Text('Silakan transfer sesuai nominal ke rekening:', style: TextStyle(color: Colors.black87, fontSize: 13)),
                     const SizedBox(height: 12),
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Bank BCA', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text('Bank BCA', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         SelectableText(
                           '123-4567-890', 
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: const Color(0xFF1E5F94)),
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1E5F94)),
                         ),
                       ],
                     ),

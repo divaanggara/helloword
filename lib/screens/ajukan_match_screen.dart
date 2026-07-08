@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'map_picker_screen.dart';
 
 class AjukanMatchScreen extends StatefulWidget {
-  const AjukanMatchScreen({Key? key}) : super(key: key);
+  const AjukanMatchScreen({super.key});
 
   @override
   State<AjukanMatchScreen> createState() => _AjukanMatchScreenState();

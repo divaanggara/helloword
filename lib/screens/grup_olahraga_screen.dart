@@ -12,14 +12,14 @@ class GrupOlahragaScreen extends StatefulWidget {
   final String? deskripsi;
 
   const GrupOlahragaScreen({
-    Key? key,
+    super.key,
     required this.namaGrup,
     required this.groupId,
     this.warnaGrup,
     this.iconUrl,
     this.bannerUrl,
     this.deskripsi,
-  }) : super(key: key);
+  });
 
   @override
   State<GrupOlahragaScreen> createState() => _GrupOlahragaScreenState();

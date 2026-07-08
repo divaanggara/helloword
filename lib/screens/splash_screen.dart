@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'auth_gate.dart'; // Pastikan file auth_gate.dart ada di folder yang sama
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -133,9 +133,9 @@ class _SplashScreenState extends State<SplashScreen> {
               const SizedBox(height: 10),
 
               // 📝 TEKS JUDUL & DESKRIPSI (Tipografi Clean & Bold ala Bootstrap)
-              Column(
+              const Column(
                 children: [
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
                       'Temukan Teman Olahraga\nTerbaikmu',
@@ -149,8 +149,8 @@ class _SplashScreenState extends State<SplashScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  const Padding(
+                  SizedBox(height: 12),
+                  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 48.0),
                     child: Text(
                       'Komunitas olahraga paling aktif dan seru untuk semua tingkat kemampuan.',

@@ -8,7 +8,7 @@ import 'invoice_screen.dart';
 class EventDetailScreen extends StatefulWidget {
   final Map<String, dynamic> event;
 
-  const EventDetailScreen({Key? key, required this.event}) : super(key: key);
+  const EventDetailScreen({super.key, required this.event});
 
   @override
   State<EventDetailScreen> createState() => _EventDetailScreenState();

@@ -9,7 +9,7 @@ import 'my_events_screen.dart';
 import 'event_screen.dart'; // Import layar event untuk navigasi
 
 class BerandaScreen extends StatefulWidget {
-  const BerandaScreen({Key? key}) : super(key: key);
+  const BerandaScreen({super.key});
 
   @override
   State<BerandaScreen> createState() => _BerandaScreenState();
@@ -56,7 +56,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     _profilSubscription = Supabase.instance.client
         .from('profiles')
         .stream(primaryKey: ['id'])
-        .eq('id', _user!.id)
+        .eq('id', _user.id)
         .listen((data) {
       if (data.isNotEmpty && mounted) {
         final profile = data.first;
@@ -224,7 +224,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       await Supabase.instance.client.from('profiles').update({
                         'nama_lengkap': nameController.text.trim(),
                         'avatar_url': tempAvatarUrl,
-                      }).eq('id', _user!.id);
+                      }).eq('id', _user.id);
 
                       setState(() {
                         _namaUser = nameController.text.trim();
@@ -276,9 +276,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
       height: 24,
       child: Stack(
         children: [
-          Positioned(left: 0, child: CircleAvatar(radius: 12, backgroundColor: Colors.redAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
-          Positioned(left: 15, child: CircleAvatar(radius: 12, backgroundColor: Colors.blueAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
-          Positioned(left: 30, child: CircleAvatar(radius: 12, backgroundColor: Colors.greenAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
+          const Positioned(left: 0, child: CircleAvatar(radius: 12, backgroundColor: Colors.redAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
+          const Positioned(left: 15, child: CircleAvatar(radius: 12, backgroundColor: Colors.blueAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
+          const Positioned(left: 30, child: CircleAvatar(radius: 12, backgroundColor: Colors.greenAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
           Positioned(left: 45, child: CircleAvatar(radius: 12, backgroundColor: const Color(0xFF2563EB), child: Text('+$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
         ],
       ),
@@ -511,12 +511,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                   child: TextField(
                                     controller: _searchController,
                                     style: const TextStyle(fontSize: 14, color: Colors.white),
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                       hintText: 'Cari kegiatan olahraga, grup, atau teman...',
-                                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-                                      prefixIcon: const Icon(Icons.search_rounded, color: Colors.white54, size: 20),
+                                      hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
+                                      prefixIcon: Icon(Icons.search_rounded, color: Colors.white54, size: 20),
                                       border: InputBorder.none,
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                                      contentPadding: EdgeInsets.symmetric(vertical: 14),
                                     ),
                                   ),
                                 ),
@@ -786,18 +786,18 @@ class _BerandaScreenState extends State<BerandaScreen> {
 
                         // 📍 KEGIATAN TERDEKAT / EVENT LAINNYA 
                         if (sisaEvent.isNotEmpty) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Kegiatan Terdekat', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3)),
+                                Text('Kegiatan Terdekat', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3)),
                                 Row(
                                   children: [
-                                    const Icon(Icons.location_on_outlined, color: Color(0xFF3B82F6), size: 14),
-                                    const SizedBox(width: 4),
-                                    const Text('Jakarta Selatan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF3B82F6))),
-                                    const Icon(Icons.keyboard_arrow_down, color: Color(0xFF3B82F6), size: 16)
+                                    Icon(Icons.location_on_outlined, color: Color(0xFF3B82F6), size: 14),
+                                    SizedBox(width: 4),
+                                    Text('Jakarta Selatan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF3B82F6))),
+                                    Icon(Icons.keyboard_arrow_down, color: Color(0xFF3B82F6), size: 16)
                                   ],
                                 ),
                               ],

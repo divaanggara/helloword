@@ -5,10 +5,11 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'login_screen.dart'; // Import login screen untuk fungsi Keluar
 import 'my_events_screen.dart'; // Import layar riwayat event
+import 'profilku_screen.dart';
 import 'leaderboard_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -313,14 +314,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: const Text('Notifikasi Event Baru'),
                 subtitle: const Text('Dapatkan info saat admin buat event'),
                 value: true,
-                activeColor: const Color(0xFF2563EB),
+                activeThumbColor: const Color(0xFF2563EB),
                 onChanged: (val) { Navigator.pop(context); }, // Cuma UI dummy sementara
               ),
               SwitchListTile(
                 title: const Text('Notifikasi Match Teman'),
                 subtitle: const Text('Info ajakan mabar olahraga'),
                 value: true,
-                activeColor: const Color(0xFF2563EB),
+                activeThumbColor: const Color(0xFF2563EB),
                 onChanged: (val) { Navigator.pop(context); },
               ),
               const SizedBox(height: 16),
@@ -494,7 +495,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       child: Column(
                         children: [
-                          _buildMenuItem(Icons.person_outline, 'Profilku', onTap: _tampilkanDialogEditProfil),
+                          _buildMenuItem(Icons.person_outline, 'Profilku', onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilkuScreen()));
+                          }),
                           _buildMenuDivider(),
                           _buildMenuItem(Icons.person_add_alt_1_outlined, 'Ajak Teman', onTap: () {
                             Clipboard.setData(const ClipboardData(text: 'Yuk gabung TitikKumpul dan cari teman olahragamu! Download sekarang!'));

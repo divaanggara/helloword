@@ -7,7 +7,7 @@ import 'map_picker_screen.dart';
 
 class AddEventScreen extends StatefulWidget {
   final Map<String, dynamic>? eventData;
-  const AddEventScreen({Key? key, this.eventData}) : super(key: key);
+  const AddEventScreen({super.key, this.eventData});
 
   @override
   State<AddEventScreen> createState() => _AddEventScreenState();
@@ -229,12 +229,12 @@ class _AddEventScreenState extends State<AddEventScreen> {
                       ),
                       child: Row(
                         children: [
-                          Expanded(
+                          const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Tuan Rumah Event? 🏆', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 6),
+                                Text('Tuan Rumah Event? 🏆', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                SizedBox(height: 6),
                                 Text('Ajak para pemain lain bergabung dalam turnamen atau sesi sparringmu!', style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4)),
                               ],
                             ),
@@ -370,7 +370,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
                         title: const Text('Event Ini Gratis?', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                         subtitle: Text(_isFree ? 'User bisa langsung gabung tanpa bayar' : 'User wajib bayar sesuai harga', style: const TextStyle(color: Colors.white54)),
                         value: _isFree,
-                        activeColor: const Color(0xFF8B5CF6),
+                        activeThumbColor: const Color(0xFF8B5CF6),
                         onChanged: (bool value) {
                           setState(() {
                             _isFree = value;
