@@ -1,17 +1,45 @@
-# helloword
+# Titik Kumpul (Hello Word)
 
-A new Flutter project.
+Aplikasi Flutter untuk project Titik Kumpul.
 
-## Getting Started
+## Persiapan (Prerequisites)
 
-This project is a starting point for a Flutter application.
+Sebelum menjalankan project ini, pastikan kamu sudah menginstal:
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (versi 3.3.0 atau lebih baru)
+- Dart SDK
+- IDE seperti VS Code atau Android Studio dengan plugin Flutter & Dart terinstal.
 
-A few resources to get you started if this is your first Flutter project:
+## Cara Menjalankan Project (Getting Started)
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Ikuti langkah-langkah berikut agar aplikasi bisa berjalan tanpa error di device kamu:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. **Clone repository ini**
+   ```bash
+   git clone <url-repo-kamu>
+   cd helloword
+   ```
+
+2. **Install semua dependencies**
+   Buka terminal di folder project, lalu jalankan:
+   ```bash
+   flutter pub get
+   ```
+
+3. **Setup Environment Variables (.env)**
+   Aplikasi ini membutuhkan file `.env` untuk menyimpan key rahasia (seperti API Key Midtrans). 
+   - Copy file `.env.example` dan ubah namanya menjadi `.env`.
+   - Buka file `.env` dan isi nilai dari `MIDTRANS_SERVER_KEY` dengan key dari Midtrans Sandbox/Production.
+   
+   *Catatan: Jika file `.env` belum dibuat, aplikasi akan tetap berjalan namun fitur pembayaran mungkin tidak berfungsi dan memunculkan warning di console.*
+
+4. **Jalankan Aplikasi**
+   Pastikan emulator Android/iOS sudah menyala, atau device fisik sudah terhubung (USB Debugging aktif).
+   Lalu jalankan perintah:
+   ```bash
+   flutter run
+   ```
+
+## Troubleshoot Error
+
+- **File not found: .env**: Pastikan kamu sudah membuat file `.env` di root folder (sejajar dengan `pubspec.yaml`). File `.env` wajib didaftarkan di dalam pubspec.yaml pada bagian assets (ini sudah dilakukan).
+- **Error Supabase**: Kredensial Supabase sudah disetup di dalam `main.dart`. Jika ingin menggunakan project Supabase yang berbeda, silahkan update URL dan Anon Key di file `lib/main.dart`.
