@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'login_screen.dart';
+
+import 'welcome_screen.dart';
 import 'main_navigation.dart'; // Tetap dipake buat user biasa
 import 'admin_panel_screen.dart'; // 👑 Import file dashboard khusus admin lo di sini
 import 'banned_screen.dart';
@@ -75,7 +76,7 @@ class AuthGate extends StatelessWidget {
         // ========================================================
         // 2. KONDISI BELUM LOGIN
         // ========================================================
-        return const LoginScreen();
+        return const WelcomeScreen();
       },
     );
   }

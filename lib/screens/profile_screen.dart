@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'login_screen.dart'; // Import login screen untuk fungsi Keluar
 import 'my_events_screen.dart'; // Import layar riwayat event
+import 'profilku_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -476,7 +477,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       child: Column(
                         children: [
-                          _buildMenuItem(Icons.person_outline, 'Profilku', onTap: _tampilkanDialogEditProfil),
+                          _buildMenuItem(Icons.person_outline, 'Profilku', onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilkuScreen()));
+                          }),
                           _buildMenuDivider(),
                           _buildMenuItem(Icons.person_add_alt_1_outlined, 'Ajak Teman', onTap: () {
                             Clipboard.setData(const ClipboardData(text: 'Yuk gabung TitikKumpul dan cari teman olahragamu! Download sekarang!'));
