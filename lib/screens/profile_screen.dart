@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'login_screen.dart'; // Import login screen untuk fungsi Keluar
-import 'my_events_screen.dart'; // Import layar riwayat event
+import 'my_groups_screen.dart'; // Import layar riwayat event
 import 'profilku_screen.dart';
 import 'leaderboard_screen.dart';
 
@@ -505,8 +505,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           }),
                           _buildMenuDivider(),
                           _buildMenuItem(Icons.people_outline, 'Komunitasku', onTap: () {
-                            // Navigasi ke my_events_screen.dart 
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const MyEventsScreen()));
+                            // Navigasi ke my_groups_screen.dart 
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const MyGroupsScreen()));
                           }),
                           _buildMenuDivider(),
                           _buildMenuItem(Icons.emoji_events_outlined, 'Pencapaianku', onTap: _tampilkanPencapaian),

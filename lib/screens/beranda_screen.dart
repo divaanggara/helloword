@@ -3,10 +3,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'grup_olahraga_screen.dart';
+import 'my_groups_screen.dart';
 import 'admin_panel_screen.dart'; 
 import 'login_screen.dart'; 
 import 'my_events_screen.dart'; 
 import 'event_screen.dart'; // Import layar event untuk navigasi
+import 'leaderboard_screen.dart';
 
 class BerandaScreen extends StatefulWidget {
   const BerandaScreen({super.key});
@@ -17,6 +19,11 @@ class BerandaScreen extends StatefulWidget {
 
 class _BerandaScreenState extends State<BerandaScreen> {
   final TextEditingController _searchController = TextEditingController();
+  
+  // 🏆 PAPAN PERINGKAT
+  int _filterRankingIndex = 0; // 0=Minggu Ini, 1=Bulan Ini, 2=All Time
+  List<Map<String, dynamic>> _topPlayers = [];
+  bool _isLoadingRanking = false;
   final _user = Supabase.instance.client.auth.currentUser;
   
   // State untuk Grup
@@ -40,6 +47,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     super.initState();
     _ambilDataProfil();
     _ambilDataSemua(); // Mengambil grup dan event sekaligus
+    _ambilDataRanking(); // Mengambil top 5 untuk papan peringkat
     _searchController.addListener(_filterPencarian);
   }
 
@@ -68,6 +76,32 @@ class _BerandaScreenState extends State<BerandaScreen> {
         });
       }
     }, onError: (e) => debugPrint('Gagal stream profil: $e'));
+  }
+
+  // 🏆 AMBIL DATA PAPAN PERINGKAT
+  Future<void> _ambilDataRanking() async {
+    if (!mounted) return;
+    setState(() => _isLoadingRanking = true);
+    try {
+      List<Map<String, dynamic>> profiles;
+
+      final res = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .order('total_points', ascending: false)
+          .limit(5);
+      profiles = List<Map<String, dynamic>>.from(res);
+
+      // Filter berdasarkan tab (data points sudah di profiles, filter ini bersifat display)
+      if (mounted) {
+        setState(() {
+          _topPlayers = profiles;
+          _isLoadingRanking = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingRanking = false);
+    }
   }
 
   // 🟦 AMBIL DATA GRUP DAN EVENT (Pencarian mendukung keduanya)
@@ -528,8 +562,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: IconButton(
-                                  icon: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
-                                  onPressed: () {},
+                                  icon: const Icon(Icons.groups_rounded, color: Colors.white, size: 20),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context, 
+                                      MaterialPageRoute(builder: (context) => const MyGroupsScreen())
+                                    );
+                                  },
                                 ),
                               )
                             ],
@@ -915,7 +954,211 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           const SizedBox(height: 24),
                         ],
 
+                        // 🏆 PAPAN PERINGKAT
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF131B2F),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white10),
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Yang lagi paling aktif',
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Text('Lihat ranking', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFFEF4444))),
+                                          SizedBox(width: 4),
+                                          Icon(Icons.arrow_forward, color: Color(0xFFEF4444), size: 16),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 14),
+
+                                // Filter Tabs
+                                Row(
+                                  children: List.generate(3, (i) {
+                                    final labels = ['Minggu Ini', 'Bulan Ini', 'All Time'];
+                                    final isSelected = _filterRankingIndex == i;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() => _filterRankingIndex = i);
+                                        _ambilDataRanking();
+                                      },
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        margin: const EdgeInsets.only(right: 8),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? const Color(0xFFEF4444) : const Color(0xFF1E293B),
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: isSelected ? null : Border.all(color: Colors.white12),
+                                        ),
+                                        child: Text(
+                                          labels[i],
+                                          style: TextStyle(
+                                            color: isSelected ? Colors.white : Colors.white54,
+                                            fontSize: 13,
+                                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // List
+                                _isLoadingRanking
+                                  ? const Center(child: Padding(
+                                      padding: EdgeInsets.all(20.0),
+                                      child: CircularProgressIndicator(color: Color(0xFFEF4444)),
+                                    ))
+                                  : _topPlayers.isEmpty
+                                    ? const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(16.0),
+                                          child: Text('Belum ada data', style: TextStyle(color: Colors.white38)),
+                                        ),
+                                      )
+                                    : Column(
+                                        children: List.generate(_topPlayers.length, (i) {
+                                          final player = _topPlayers[i];
+                                          final rank = i + 1;
+                                          final nama = player['nama_lengkap'] ?? 'User';
+                                          final points = player['total_points'] ?? 0;
+                                          final avatarUrl = player['avatar_url'] ?? '';
+                                          final isFirst = rank == 1;
+                                          final rankColor = isFirst
+                                              ? const Color(0xFFF59E0B)
+                                              : const Color(0xFF1E293B);
+                                          final rankBorder = isFirst ? null : Border.all(color: Colors.white12);
+
+                                          return Container(
+                                            margin: const EdgeInsets.only(bottom: 10),
+                                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            decoration: BoxDecoration(
+                                              color: isFirst
+                                                  ? const Color(0xFFF59E0B).withOpacity(0.08)
+                                                  : const Color(0xFF1E293B),
+                                              borderRadius: BorderRadius.circular(14),
+                                              border: isFirst
+                                                  ? Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3))
+                                                  : Border.all(color: Colors.white.withOpacity(0.05)),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                // Rank badge
+                                                Container(
+                                                  width: 36,
+                                                  height: 36,
+                                                  decoration: BoxDecoration(
+                                                    color: rankColor,
+                                                    borderRadius: BorderRadius.circular(10),
+                                                    border: rankBorder,
+                                                  ),
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    '#$rank',
+                                                    style: TextStyle(
+                                                      color: isFirst ? Colors.white : Colors.white54,
+                                                      fontWeight: FontWeight.w800,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+
+                                                // Avatar
+                                                CircleAvatar(
+                                                  radius: 20,
+                                                  backgroundColor: const Color(0xFF2563EB),
+                                                  backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                                                  child: avatarUrl.isEmpty
+                                                      ? Text(
+                                                          nama.isNotEmpty ? nama[0].toUpperCase() : '?',
+                                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                        )
+                                                      : null,
+                                                ),
+                                                const SizedBox(width: 12),
+
+                                                // Name & Subtitle
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        nama,
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight: FontWeight.w700,
+                                                          fontSize: 14,
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                      const SizedBox(height: 2),
+                                                      Text(
+                                                        '$points aktivitas selesai',
+                                                        style: const TextStyle(color: Colors.white38, fontSize: 12),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+
+                                                // XP
+                                                Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                                  children: [
+                                                    Text(
+                                                      '$points',
+                                                      style: const TextStyle(
+                                                        color: Color(0xFFEF4444),
+                                                        fontWeight: FontWeight.w800,
+                                                        fontSize: 18,
+                                                      ),
+                                                    ),
+                                                    const Text(
+                                                      'XP',
+                                                      style: TextStyle(color: Color(0xFFEF4444), fontSize: 11, fontWeight: FontWeight.w600),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
                         // 📣 BANNER AYO BUAT TIM
+
                         Container(
                           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),

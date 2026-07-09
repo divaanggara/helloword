@@ -5,6 +5,7 @@ import 'add_event_screen.dart';
 import 'login_screen.dart'; // Import untuk fungsi navigasi logout
 import 'admin_categories_screen.dart';
 import 'admin_users_screen.dart';
+import 'admin_events_screen.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -723,6 +724,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           subtitle: 'Lihat daftar pengguna & Banned akun',
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminUsersScreen()));
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildMenuCard(
+          icon: Icons.event_note_rounded,
+          color: const Color(0xFFEF4444),
+          title: 'Manajemen Event',
+          subtitle: 'Lihat & Hapus kegiatan terdekat / unggulan',
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminEventsScreen()));
           },
         ),
       ],
