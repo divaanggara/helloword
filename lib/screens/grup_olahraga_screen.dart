@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'info_anggota_screen.dart';
 import 'event_detail_screen.dart';
 
@@ -28,14 +29,63 @@ class GrupOlahragaScreen extends StatefulWidget {
 class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
   final TextEditingController _pesanController = TextEditingController();
   final _supabase = Supabase.instance.client;
+  final _imagePicker = ImagePicker();
 
   bool _isMember = false;
   bool _isLoadingMember = true;
+  bool _isUploadingFoto = false;
+
+  String? _myAvatarUrl;
+  DateTime? _clearedAt;
 
   @override
   void initState() {
     super.initState();
     _cekStatusKeanggotaan();
+    _loadMyAvatar();
+  }
+
+  // 👤 AMBIL AVATAR USER SENDIRI
+  Future<void> _loadMyAvatar() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+    try {
+      final data = await _supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', user.id)
+          .maybeSingle();
+      if (mounted && data != null) {
+        setState(() => _myAvatarUrl = data['avatar_url'] as String?);
+      }
+    } catch (_) {}
+  }
+
+  // 🖼️ WIDGET AVATAR (dengan fallback inisial nama)
+  Widget _buildAvatar(String? avatarUrl, String senderName, {bool isMe = false}) {
+    final warna = widget.warnaGrup ?? const Color(0xFF1E6091);
+    final initial = senderName.isNotEmpty ? senderName[0].toUpperCase() : '?';
+
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      return CircleAvatar(
+        radius: 16,
+        backgroundImage: NetworkImage(avatarUrl),
+        backgroundColor: warna.withAlpha(50),
+        onBackgroundImageError: (_, __) {},
+      );
+    }
+    return CircleAvatar(
+      radius: 16,
+      backgroundColor: isMe ? Colors.white24 : warna.withAlpha(40),
+      child: Text(
+        initial,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: isMe ? Colors.white : warna,
+        ),
+      ),
+    );
   }
 
   // 🔍 CEK STATUS KEANGGOTAAN
@@ -53,6 +103,9 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
       if (mounted) {
         setState(() {
           _isMember = data.isNotEmpty;
+          if (data.isNotEmpty && data[0]['cleared_at'] != null) {
+            _clearedAt = DateTime.parse(data[0]['cleared_at']);
+          }
           _isLoadingMember = false;
         });
       }
@@ -119,6 +172,7 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
         'user_id': user.id,
         'group_id': widget.groupId,
         'sender_name': user.userMetadata?['nama_lengkap'] ?? user.email?.split('@')[0] ?? 'Anggota',
+        'sender_avatar': _myAvatarUrl,
       });
     } catch (e) {
       _pesanController.text = pesanYangBakalDikirim;
@@ -133,6 +187,167 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
     }
   }
 
+  // 📷 PILIH SUMBER FOTO (Dialog)
+  void _showPilihSumberFoto() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Text(
+                'Kirim Foto',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: (widget.warnaGrup ?? const Color(0xFF1E6091)).withOpacity(0.15),
+                  child: Icon(Icons.photo_library_rounded, color: widget.warnaGrup ?? const Color(0xFF1E6091)),
+                ),
+                title: const Text('Pilih dari Galeri', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Buka koleksi foto di galeri'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pilihDanKirimFoto(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: (widget.warnaGrup ?? const Color(0xFF1E6091)).withOpacity(0.15),
+                  child: Icon(Icons.camera_alt_rounded, color: widget.warnaGrup ?? const Color(0xFF1E6091)),
+                ),
+                title: const Text('Ambil dari Kamera', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Foto langsung pakai kamera'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pilihDanKirimFoto(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 📤 UPLOAD FOTO & KIRIM KE GRUP
+  Future<void> _pilihDanKirimFoto(ImageSource source) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final XFile? picked = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 75,
+        maxWidth: 1280,
+      );
+      if (picked == null) return;
+
+      setState(() => _isUploadingFoto = true);
+
+      final fileBytes = await picked.readAsBytes();
+      final fileExt = picked.name.split('.').last.toLowerCase();
+      final fileName = '${widget.groupId}_${user.id}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final storagePath = 'chats/$fileName';
+
+      // Upload ke Supabase Storage
+      await _supabase.storage
+          .from('group-chat-images')
+          .uploadBinary(
+            storagePath,
+            fileBytes,
+            fileOptions: FileOptions(contentType: 'image/$fileExt', upsert: true),
+          );
+
+      // Ambil public URL
+      final imageUrl = _supabase.storage
+          .from('group-chat-images')
+          .getPublicUrl(storagePath);
+
+      // Insert ke group_chats
+      await _supabase.from('group_chats').insert({
+        'message': '📷 Foto',
+        'image_url': imageUrl,
+        'user_id': user.id,
+        'group_id': widget.groupId,
+        'sender_name': user.userMetadata?['nama_lengkap'] ?? user.email?.split('@')[0] ?? 'Anggota',
+        'sender_avatar': _myAvatarUrl,
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal kirim foto: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingFoto = false);
+    }
+  }
+
+  // 🧹 BERSIHKAN CHAT
+  Future<void> _clearChat() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Bersihkan Chat?'),
+        content: const Text('Tampilan chat di grup ini akan dikosongkan. Chat hanya akan terhapus di layar Anda, pengguna lain tetap bisa melihatnya.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true), 
+            child: const Text('Bersihkan', style: TextStyle(color: Colors.white))
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final now = DateTime.now().toIso8601String();
+      await _supabase.from('group_members').update({
+        'cleared_at': now
+      }).eq('group_id', widget.groupId).eq('user_id', user.id);
+      
+      if (mounted) {
+        setState(() {
+          _clearedAt = DateTime.parse(now);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Chat berhasil dibersihkan!'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membersihkan chat: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final warnaHeader = widget.warnaGrup ?? const Color(0xFFD46A4C);
@@ -141,6 +356,7 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
       appBar: AppBar(
         backgroundColor: warnaHeader,
         iconTheme: const IconThemeData(color: Colors.white),
+        titleSpacing: 0,
         title: GestureDetector(
           onTap: () {
             Navigator.push(
@@ -153,22 +369,79 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
               ),
             );
           },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                widget.namaGrup,
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              // 🖼️ ICON GRUP
+              Container(
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white38, width: 1.5),
+                ),
+                child: widget.iconUrl != null && widget.iconUrl!.isNotEmpty
+                    ? CircleAvatar(
+                        radius: 20,
+                        backgroundColor: warnaHeader,
+                        backgroundImage: NetworkImage(widget.iconUrl!),
+                        onBackgroundImageError: (_, __) {},
+                      )
+                    : CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.white24,
+                        child: Text(
+                          widget.namaGrup.isNotEmpty
+                              ? widget.namaGrup[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
               ),
-              const Text(
-                'Klik di sini untuk info anggota',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
+              // 📝 NAMA & SUBTITLE
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.namaGrup,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'Klik untuk info anggota',
+                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
+                ],
               ),
             ],
           ),
         ),
         actions: [
           if (_isMember) _buildEventIconButton(),
+          if (_isMember)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onSelected: (val) {
+                if (val == 'clear_chat') _clearChat();
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'clear_chat',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_sweep, color: Colors.red, size: 20),
+                      SizedBox(width: 8),
+                      Text('Bersihkan Chat', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
       body: _buildBody(),
@@ -485,8 +758,15 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final messages = snapshot.data!;
+              final allMessages = snapshot.data!;
               final myUserId = _supabase.auth.currentUser?.id;
+
+              final messages = allMessages.where((msg) {
+                if (_clearedAt == null) return true;
+                final createdAt = DateTime.tryParse(msg['created_at'] ?? '');
+                if (createdAt == null) return true;
+                return createdAt.isAfter(_clearedAt!);
+              }).toList();
 
               if (messages.isEmpty) {
                 return const Center(child: Text('Belum ada obrolan, sapa anak-anak gih!'));
@@ -498,35 +778,99 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
                 itemBuilder: (context, index) {
                   final msg = messages[index];
                   final isMe = msg['user_id'] == myUserId;
+                  final senderName = msg['sender_name'] ?? 'Anggota';
+                  final senderAvatar = msg['sender_avatar'] as String?;
 
-                  return Align(
-                    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: isMe ? const Color(0xFF1E6091) : Colors.grey[300],
-                        borderRadius: BorderRadius.only(
-                          topLeft: const Radius.circular(15),
-                          topRight: const Radius.circular(15),
-                          bottomLeft: isMe ? const Radius.circular(15) : const Radius.circular(0),
-                          bottomRight: isMe ? const Radius.circular(0) : const Radius.circular(15),
-                        ),
+                  // Bubble chat
+                  final bubble = Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.65,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isMe ? (widget.warnaGrup ?? const Color(0xFF1E6091)) : Colors.grey[200],
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(16),
+                        topRight: const Radius.circular(16),
+                        bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
+                        bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
                       ),
-                      child: Column(
-                        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start, // 🔥 TYPO SUDAH FIXED DISINI BRO!
-                        children: [
-                          Text(
-                            isMe ? 'Anda' : (msg['sender_name'] ?? 'Anggota'),
-                            style: TextStyle(color: isMe ? Colors.white70 : Colors.black54, fontSize: 10, fontWeight: FontWeight.bold),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(18),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      children: [
+                        if (!isMe)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              senderName,
+                              style: TextStyle(
+                                color: widget.warnaGrup ?? const Color(0xFF1E6091),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 4),
+                        if (msg['image_url'] != null && (msg['image_url'] as String).isNotEmpty)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              msg['image_url'],
+                              width: 200,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return SizedBox(
+                                  width: 200,
+                                  height: 140,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                          : null,
+                                      color: isMe ? Colors.white : (widget.warnaGrup ?? const Color(0xFF1E6091)),
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 48, color: Colors.red),
+                            ),
+                          )
+                        else
                           Text(
                             msg['message'] ?? '',
-                            style: TextStyle(color: isMe ? Colors.white : Colors.black87, fontSize: 14),
+                            style: TextStyle(
+                              color: isMe ? Colors.white : Colors.black87,
+                              fontSize: 14,
+                            ),
                           ),
-                        ],
-                      ),
+                      ],
+                    ),
+                  );
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: isMe
+                          ? [
+                              bubble,
+                              const SizedBox(width: 6),
+                              _buildAvatar(senderAvatar ?? _myAvatarUrl, senderName, isMe: true),
+                            ]
+                          : [
+                              _buildAvatar(senderAvatar, senderName),
+                              const SizedBox(width: 6),
+                              bubble,
+                            ],
                     ),
                   );
                 },
@@ -535,26 +879,92 @@ class _GrupOlahragaScreenState extends State<GrupOlahragaScreen> {
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: const BoxDecoration(
             color: Colors.white,
             border: Border(top: BorderSide(color: Colors.black12)),
           ),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _pesanController,
-                  decoration: InputDecoration(
-                    hintText: 'Ketik pesan di grup...',
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+              // 🔄 Indikator upload foto
+              if (_isUploadingFoto)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: widget.warnaGrup ?? const Color(0xFF1E6091),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Mengupload foto...',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: widget.warnaGrup ?? const Color(0xFF1E6091),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.send, color: Colors.blue, size: 28),
-                onPressed: _kirimPesan,
+              Row(
+                children: [
+                  // 📷 Tombol Kirim Foto
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: _isUploadingFoto ? null : _showPilihSumberFoto,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.add_photo_alternate_rounded,
+                          color: _isUploadingFoto
+                              ? Colors.grey
+                              : (widget.warnaGrup ?? const Color(0xFF1E6091)),
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: TextField(
+                      controller: _pesanController,
+                      decoration: InputDecoration(
+                        hintText: 'Ketik pesan di grup...',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(color: widget.warnaGrup ?? const Color(0xFF1E6091), width: 1.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  // ✉️ Tombol Kirim Teks
+                  Material(
+                    color: widget.warnaGrup ?? const Color(0xFF1E6091),
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: _kirimPesan,
+                      child: const Padding(
+                        padding: EdgeInsets.all(10.0),
+                        child: Icon(Icons.send_rounded, color: Colors.white, size: 22),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
