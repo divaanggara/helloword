@@ -36,10 +36,24 @@ android {
     // ==========================================
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String?
-            keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String?
+            if (keystoreProperties.isEmpty) {
+                // Fallback ke debug keystore jika key.properties tidak ditemukan
+                val debugKeystore = rootProject.file("app/debug.keystore")
+                if (debugKeystore.exists()) {
+                    storeFile = debugKeystore
+                } else {
+                    // Fallback to default android debug keystore
+                    storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                }
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+                storePassword = "android"
+            } else {
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+                storePassword = keystoreProperties["storePassword"] as String?
+            }
         }
     }
 

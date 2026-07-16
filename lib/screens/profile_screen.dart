@@ -7,6 +7,7 @@ import 'login_screen.dart'; // Import login screen untuk fungsi Keluar
 import 'my_groups_screen.dart'; // Import layar riwayat event
 import 'profilku_screen.dart';
 import 'leaderboard_screen.dart';
+import '../theme_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -46,12 +47,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user != null) {
       _profileSubscription = _supabase
           .from('profiles')
-          .stream(primaryKey: ['id'])
-          .listen((data) async {
+          .stream(primaryKey: ['id']).listen((data) async {
         if (data.isNotEmpty) {
           // Urutkan data berdasarkan total_points secara descending
-          data.sort((a, b) => (b['total_points'] ?? 0).compareTo(a['total_points'] ?? 0));
-          
+          data.sort((a, b) =>
+              (b['total_points'] ?? 0).compareTo(a['total_points'] ?? 0));
+
           final userIndex = data.indexWhere((p) => p['id'] == user.id);
           final profile = userIndex != -1 ? data[userIndex] : null;
           final int rank = userIndex != -1 ? userIndex + 1 : 0;
@@ -70,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _avatarUrl = profile['avatar_url'];
                 _totalPoints = profile['total_points'] ?? 0;
                 _peringkat = rank;
-                _totalEvents = (eventData as List).length; 
+                _totalEvents = (eventData as List).length;
                 _totalCampaign = profile['total_campaign'] ?? 0;
                 _isLoading = false;
               });
@@ -86,11 +87,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // 📸 UPLOAD FOTO GALERI 
+  // 📸 UPLOAD FOTO GALERI
   Future<String?> _uploadFotoGaleri() async {
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-    if (image == null) return null; 
+    final XFile? image =
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    if (image == null) return null;
 
     try {
       final user = _supabase.auth.currentUser;
@@ -99,35 +101,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final bytes = await image.readAsBytes();
       final fileExt = image.name.split('.').last;
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      
+
       final filePath = '${user.id}/$fileName';
 
       await _supabase.storage.from('avatars').uploadBinary(filePath, bytes);
       return _supabase.storage.from('avatars').getPublicUrl(filePath);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload ke Storage gagal: $e'), backgroundColor: Colors.red, duration: const Duration(seconds: 4))
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Upload ke Storage gagal: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4)));
       return null;
     }
   }
 
-  // ⚙️ POP-UP EDIT PROFIL 
+  // ⚙️ POP-UP EDIT PROFIL
   void _tampilkanDialogEditProfil() {
-    final TextEditingController nameController = TextEditingController(text: _namaLengkap);
+    final TextEditingController nameController =
+        TextEditingController(text: _namaLengkap);
     String? tempAvatarUrl = _avatarUrl;
     bool isUploading = false;
 
     showDialog(
       context: context,
-      barrierDismissible: !isUploading, 
+      barrierDismissible: !isUploading,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
               backgroundColor: const Color(0xFF1E293B),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              title: const Text('Pengaturan Profil', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24)),
+              title: const Text('Pengaturan Profil',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -137,10 +144,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       CircleAvatar(
                         radius: 45,
                         backgroundColor: const Color(0xFF334155),
-                        backgroundImage: tempAvatarUrl != null && tempAvatarUrl!.isNotEmpty ? NetworkImage(tempAvatarUrl!) : null,
-                        child: isUploading 
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : (tempAvatarUrl == null || tempAvatarUrl!.isEmpty ? const Icon(Icons.person, size: 45, color: Colors.white) : null),
+                        backgroundImage:
+                            tempAvatarUrl != null && tempAvatarUrl!.isNotEmpty
+                                ? NetworkImage(tempAvatarUrl!)
+                                : null,
+                        child: isUploading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : (tempAvatarUrl == null || tempAvatarUrl!.isEmpty
+                                ? const Icon(Icons.person,
+                                    size: 45, color: Colors.white)
+                                : null),
                       ),
                       if (!isUploading)
                         GestureDetector(
@@ -154,53 +168,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           },
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: Color(0xFF2563EB), shape: BoxShape.circle),
-                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFF2563EB),
+                                shape: BoxShape.circle),
+                            child: const Icon(Icons.camera_alt,
+                                color: Colors.white, size: 18),
                           ),
                         ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   TextField(
-                    controller: nameController, 
+                    controller: nameController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: 'Nama Lengkap', 
+                      labelText: 'Nama Lengkap',
                       labelStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.white24)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFF2563EB))),
-                    ), 
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(color: Colors.white24)),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                              const BorderSide(color: Color(0xFF2563EB))),
+                    ),
                     enabled: !isUploading,
                   ),
                 ],
               ),
               actions: [
-                TextButton(onPressed: isUploading ? null : () => Navigator.pop(context), child: const Text('Batal', style: TextStyle(color: Colors.white54))),
+                TextButton(
+                    onPressed:
+                        isUploading ? null : () => Navigator.pop(context),
+                    child: const Text('Batal',
+                        style: TextStyle(color: Colors.white54))),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2563EB),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: isUploading ? null : () async {
-                    final user = _supabase.auth.currentUser;
-                    if (user == null) return;
-                    try {
-                      await _supabase.from('profiles').update({
-                        'nama_lengkap': nameController.text.trim(),
-                        'avatar_url': tempAvatarUrl,
-                      }).eq('id', user.id);
+                  onPressed: isUploading
+                      ? null
+                      : () async {
+                          final user = _supabase.auth.currentUser;
+                          if (user == null) return;
+                          try {
+                            await _supabase.from('profiles').update({
+                              'nama_lengkap': nameController.text.trim(),
+                              'avatar_url': tempAvatarUrl,
+                            }).eq('id', user.id);
 
-                      setState(() {
-                        _namaLengkap = nameController.text.trim();
-                        _avatarUrl = tempAvatarUrl;
-                      });
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profil sukses diupdate! ✅'), backgroundColor: Colors.green));
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal Update Profil: $e'), backgroundColor: Colors.red));
-                    }
-                  },
-                  child: const Text('Simpan', style: TextStyle(color: Colors.white)),
+                            setState(() {
+                              _namaLengkap = nameController.text.trim();
+                              _avatarUrl = tempAvatarUrl;
+                            });
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Profil sukses diupdate! ✅'),
+                                    backgroundColor: Colors.green));
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Gagal Update Profil: $e'),
+                                backgroundColor: Colors.red));
+                          }
+                        },
+                  child: const Text('Simpan',
+                      style: TextStyle(color: Colors.white)),
                 ),
               ],
             );
@@ -216,120 +251,139 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool isSaving = false;
 
     showDialog(
-      context: context,
-      barrierDismissible: !isSaving,
-      builder: (context) {
-        return StatefulBuilder(builder: (context, setStateDialog) {
-          return AlertDialog(
-            title: const Text('Ganti Password'),
-            content: TextField(
-              controller: passController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password Baru', hintText: 'Minimal 6 karakter'),
-              enabled: !isSaving,
-            ),
-            actions: [
-              TextButton(onPressed: isSaving ? null : () => Navigator.pop(context), child: const Text('Batal')),
-              ElevatedButton(
-                onPressed: isSaving ? null : () async {
-                  if (passController.text.length < 6) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password minimal 6 karakter')));
-                    return;
-                  }
-                  setStateDialog(() => isSaving = true);
-                  try {
-                    await _supabase.auth.updateUser(UserAttributes(password: passController.text));
-                    if (mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password berhasil diubah! ✅')));
-                    }
-                  } catch(e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
-                  } finally {
-                    if (mounted) setStateDialog(() => isSaving = false);
-                  }
-                },
-                child: const Text('Simpan'),
-              )
-            ]
-          );
+        context: context,
+        barrierDismissible: !isSaving,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setStateDialog) {
+            return AlertDialog(
+                title: const Text('Ganti Password'),
+                content: TextField(
+                  controller: passController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                      labelText: 'Password Baru',
+                      hintText: 'Minimal 6 karakter'),
+                  enabled: !isSaving,
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: isSaving ? null : () => Navigator.pop(context),
+                      child: const Text('Batal')),
+                  ElevatedButton(
+                    onPressed: isSaving
+                        ? null
+                        : () async {
+                            if (passController.text.length < 6) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Password minimal 6 karakter')));
+                              return;
+                            }
+                            setStateDialog(() => isSaving = true);
+                            try {
+                              await _supabase.auth.updateUser(UserAttributes(
+                                  password: passController.text));
+                              if (mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Password berhasil diubah! ✅')));
+                              }
+                            } catch (e) {
+                              if (mounted)
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Gagal: $e')));
+                            } finally {
+                              if (mounted)
+                                setStateDialog(() => isSaving = false);
+                            }
+                          },
+                    child: const Text('Simpan'),
+                  )
+                ]);
+          });
         });
-      }
-    );
   }
 
   // 🏆 POP-UP PENCAPAIAN
   void _tampilkanPencapaian() {
     String badge = _totalPoints >= 100 ? 'Atlet Lokal 🥇' : 'Pemula 🏅';
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Pencapaianku', textAlign: TextAlign.center),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.emoji_events, size: 60, color: Colors.amber),
-            const SizedBox(height: 16),
-            Text('Badge Anda Saat Ini:', style: TextStyle(color: Colors.grey[600])),
-            Text(badge, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('Kumpulkan poin terus dengan gabung event olahraga ya!', textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
-          ]
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Tutup'))
-        ]
-      )
-    );
+        context: context,
+        builder: (context) => AlertDialog(
+                title: const Text('Pencapaianku', textAlign: TextAlign.center),
+                content: Column(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.emoji_events, size: 60, color: Colors.amber),
+                  const SizedBox(height: 16),
+                  Text('Badge Anda Saat Ini:',
+                      style: TextStyle(color: Colors.grey[600])),
+                  Text(badge,
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  const Text(
+                      'Kumpulkan poin terus dengan gabung event olahraga ya!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12)),
+                ]),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Tutup'))
+                ]));
   }
 
   // ℹ️ POP-UP INFO UMUM
   void _tampilkanDialogInfo(String title, String content) {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(content, style: const TextStyle(height: 1.5)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Tutup'))
-        ]
-      )
-    );
+        context: context,
+        builder: (context) => AlertDialog(
+                title: Text(title),
+                content: Text(content, style: const TextStyle(height: 1.5)),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Tutup'))
+                ]));
   }
 
   // 🔔 BOTTOM SHEET NOTIFIKASI
   void _tampilkanPengaturanNotifikasi() {
     showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Pengaturan Notifikasi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('Notifikasi Event Baru'),
-                subtitle: const Text('Dapatkan info saat admin buat event'),
-                value: true,
-                activeThumbColor: const Color(0xFF2563EB),
-                onChanged: (val) { Navigator.pop(context); }, // Cuma UI dummy sementara
-              ),
-              SwitchListTile(
-                title: const Text('Notifikasi Match Teman'),
-                subtitle: const Text('Info ajakan mabar olahraga'),
-                value: true,
-                activeThumbColor: const Color(0xFF2563EB),
-                onChanged: (val) { Navigator.pop(context); },
-              ),
-              const SizedBox(height: 16),
-            ]
-          )
-        );
-      }
-    );
+        context: context,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        builder: (context) {
+          return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const Text('Pengaturan Notifikasi',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('Notifikasi Event Baru'),
+                  subtitle: const Text('Dapatkan info saat admin buat event'),
+                  value: true,
+                  activeThumbColor: const Color(0xFF2563EB),
+                  onChanged: (val) {
+                    Navigator.pop(context);
+                  }, // Cuma UI dummy sementara
+                ),
+                SwitchListTile(
+                  title: const Text('Notifikasi Match Teman'),
+                  subtitle: const Text('Info ajakan mabar olahraga'),
+                  value: true,
+                  activeThumbColor: const Color(0xFF2563EB),
+                  onChanged: (val) {
+                    Navigator.pop(context);
+                  },
+                ),
+                const SizedBox(height: 16),
+              ]));
+        });
   }
 
   Future<void> _logout() async {
@@ -346,7 +400,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Ya, Keluar', style: TextStyle(color: Colors.red)),
+            child:
+                const Text('Ya, Keluar', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -366,230 +421,384 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B101E), // 🔹 Dark Theme sama dengan Beranda Utama
-      body: SafeArea(
-        child: _isLoading 
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)))
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    // --- HEADER PROFIL ---
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: _tampilkanDialogEditProfil,
-                          child: Stack(
+    return ValueListenableBuilder<ThemeMode>(
+        valueListenable: ThemeProvider().themeModeNotifier,
+        builder: (context, currentMode, _) {
+          final bool isDarkMode = currentMode == ThemeMode.dark;
+
+          // Definisi Warna Dinamis
+          final bgColor =
+              isDarkMode ? const Color(0xFF0B101E) : const Color(0xFFF8FAFC);
+          final cardColor = isDarkMode ? const Color(0xFF131B2F) : Colors.white;
+          final textColorPrimary =
+              isDarkMode ? Colors.white : const Color(0xFF0F172A);
+          final textColorSecondary =
+              isDarkMode ? Colors.white70 : const Color(0xFF64748B);
+          final borderColor = isDarkMode
+              ? Colors.white.withOpacity(0.05)
+              : Colors.grey.withOpacity(0.2);
+          final iconBgColor =
+              isDarkMode ? const Color(0xFF131B2F) : const Color(0xFFF1F5F9);
+
+          return Scaffold(
+            backgroundColor: bgColor,
+            body: SafeArea(
+              child: _isLoading
+                  ? const Center(
+                      child:
+                          CircularProgressIndicator(color: Color(0xFF2563EB)))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          // --- HEADER PROFIL ---
+                          Row(
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: const Color(0xFF1E6091), width: 3),
-                                  boxShadow: [
-                                    BoxShadow(color: const Color(0xFF1E6091).withOpacity(0.5), blurRadius: 15, offset: const Offset(0, 0)),
+                              GestureDetector(
+                                onTap: _tampilkanDialogEditProfil,
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: const Color(0xFF1E6091),
+                                            width: 3),
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color: const Color(0xFF1E6091)
+                                                  .withOpacity(0.5),
+                                              blurRadius: 15,
+                                              offset: const Offset(0, 0)),
+                                        ],
+                                      ),
+                                      child: CircleAvatar(
+                                        radius: 36,
+                                        backgroundColor: iconBgColor,
+                                        backgroundImage: _avatarUrl != null &&
+                                                _avatarUrl!.isNotEmpty
+                                            ? NetworkImage(_avatarUrl!)
+                                            : null,
+                                        child: _avatarUrl == null ||
+                                                _avatarUrl!.isEmpty
+                                            ? Icon(Icons.person,
+                                                size: 40,
+                                                color: textColorSecondary)
+                                            : null,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF2563EB),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: bgColor, width: 2),
+                                        ),
+                                        child: const Icon(Icons.camera_alt,
+                                            size: 12, color: Colors.white),
+                                      ),
+                                    )
                                   ],
                                 ),
-                                child: CircleAvatar(
-                                  radius: 36,
-                                  backgroundColor: const Color(0xFF131B2F),
-                                  backgroundImage: _avatarUrl != null && _avatarUrl!.isNotEmpty
-                                      ? NetworkImage(_avatarUrl!)
-                                      : null,
-                                  child: _avatarUrl == null || _avatarUrl!.isEmpty
-                                      ? const Icon(Icons.person, size: 40, color: Colors.white54)
-                                      : null,
-                                ),
                               ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2563EB),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: const Color(0xFF0B101E), width: 2),
-                                  ),
-                                  child: const Icon(Icons.camera_alt, size: 12, color: Colors.white),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            _namaLengkap,
+                                            style: TextStyle(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.w800,
+                                                color: textColorPrimary),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (_totalPoints >= 1000) ...[
+                                          const SizedBox(width: 8),
+                                          const Icon(Icons.workspace_premium,
+                                              color: Colors.amber, size: 24),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _email,
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: textColorSecondary,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
                                 ),
                               )
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      _namaLengkap,
-                                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  if (_totalPoints >= 1000) ...[
-                                    const SizedBox(width: 8),
-                                    const Icon(Icons.workspace_premium, color: Colors.amber, size: 24),
-                                  ],
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _email,
-                                style: const TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w500),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 32),
+                          const SizedBox(height: 32),
 
-                    // --- KARTU STATISTIK ---
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1E6091), Color(0xFF131B2F)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(color: const Color(0xFF1E6091).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
-                        ],
-                        border: Border.all(color: Colors.white.withOpacity(0.1)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(child: _buildStatItem('$_totalPoints', 'Points')),
-                          _buildDivider(),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => const LeaderboardScreen()));
-                              },
-                              child: _buildStatItem('#$_peringkat', 'Peringkat', valueColor: Colors.amber),
+                          // --- KARTU STATISTIK ---
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF1E6091), Color(0xFF131B2F)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: const Color(0xFF1E6091)
+                                        .withOpacity(0.3),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 8)),
+                              ],
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.1)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Expanded(
+                                    child: _buildStatItem(
+                                        '$_totalPoints', 'Points',
+                                        isDarkMode: isDarkMode)),
+                                _buildDivider(true, isDarkMode),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const LeaderboardScreen()));
+                                    },
+                                    child: _buildStatItem(
+                                        '#$_peringkat', 'Peringkat',
+                                        valueColor: Colors.amber,
+                                        isDarkMode: isDarkMode),
+                                  ),
+                                ),
+                                _buildDivider(true, isDarkMode),
+                                Expanded(
+                                    child: _buildStatItem(
+                                        '$_totalEvents', 'Events',
+                                        isDarkMode: isDarkMode)),
+                                _buildDivider(true, isDarkMode),
+                                Expanded(
+                                    child: _buildStatItem(
+                                        '$_totalCampaign', 'Campaign',
+                                        isDarkMode: isDarkMode)),
+                              ],
                             ),
                           ),
-                          _buildDivider(),
-                          Expanded(child: _buildStatItem('$_totalEvents', 'Events')),
-                          _buildDivider(),
-                          Expanded(child: _buildStatItem('$_totalCampaign', 'Campaign')),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+                          const SizedBox(height: 32),
 
-                    // --- MENU UTAMA ---
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF131B2F),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.05)),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildMenuItem(Icons.person_outline, 'Profilku', onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilkuScreen()));
-                          }),
-                          _buildMenuDivider(),
-                          _buildMenuItem(Icons.person_add_alt_1_outlined, 'Ajak Teman', onTap: () {
-                            Clipboard.setData(const ClipboardData(text: 'Yuk gabung TitikKumpul dan cari teman olahragamu! Download sekarang!'));
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Link ajak teman berhasil disalin! 🚀')));
-                          }),
-                          _buildMenuDivider(),
-                          _buildMenuItem(Icons.people_outline, 'Komunitasku', onTap: () {
-                            // Navigasi ke my_groups_screen.dart 
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const MyGroupsScreen()));
-                          }),
-                          _buildMenuDivider(),
-                          _buildMenuItem(Icons.emoji_events_outlined, 'Pencapaianku', onTap: _tampilkanPencapaian),
-                          _buildMenuDivider(),
-                          _buildMenuItem(Icons.leaderboard_outlined, 'Papan Peringkat', onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const LeaderboardScreen()));
-                          }),
-                          _buildMenuDivider(),
-                          _buildMenuItem(Icons.vpn_key_outlined, 'Ganti Password', onTap: _tampilkanDialogGantiPassword),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // --- MENU PENGATURAN ---
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF131B2F),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.05)),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildMenuItem(Icons.support_agent, 'Pusat Bantuan', onTap: () {
-                            _tampilkanDialogInfo('Pusat Bantuan', 'Punya kendala? Hubungi tim kami via Email:\nsupport@titikkumpul.com\n\nAtau WhatsApp:\n+62 812-3456-7890');
-                          }),
-                          _buildMenuDivider(),
-                          _buildMenuItem(Icons.privacy_tip_outlined, 'Kebijakan Privasi', onTap: () {
-                            _tampilkanDialogInfo('Kebijakan Privasi', 'Kami menjaga privasi Anda. Data profil hanya dibagikan kepada pengguna yang berada di dalam grup olahraga yang sama dengan Anda.\n\nKata sandi dienkripsi dengan standar tinggi oleh Supabase.');
-                          }),
-                          _buildMenuDivider(),
-                          _buildMenuItem(Icons.notifications_none_outlined, 'Pengaturan Notifikasi', onTap: _tampilkanPengaturanNotifikasi),
-                          _buildMenuDivider(),
-                          _buildMenuItem(
-                            Icons.cleaning_services_outlined, 
-                            'Clear Cache', 
-                            textColor: const Color(0xFF2563EB), 
-                            iconColor: const Color(0xFF2563EB),
-                            hideChevron: true,
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Cache berhasil dibersihkan')),
-                              );
-                            }
+                          // --- MENU UTAMA ---
+                          Container(
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Column(
+                              children: [
+                                _buildMenuItem(Icons.person_outline, 'Profilku',
+                                    textColorPrimary, isDarkMode, onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const ProfilkuScreen()));
+                                }),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.person_add_alt_1_outlined,
+                                    'Ajak Teman',
+                                    textColorPrimary,
+                                    isDarkMode, onTap: () {
+                                  Clipboard.setData(const ClipboardData(
+                                      text:
+                                          'Yuk gabung TitikKumpul dan cari teman olahragamu! Download sekarang!'));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Link ajak teman berhasil disalin! 🚀')));
+                                }),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.people_outline,
+                                    'Komunitasku',
+                                    textColorPrimary,
+                                    isDarkMode, onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const MyGroupsScreen()));
+                                }),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.emoji_events_outlined,
+                                    'Pencapaianku',
+                                    textColorPrimary,
+                                    isDarkMode,
+                                    onTap: _tampilkanPencapaian),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.leaderboard_outlined,
+                                    'Papan Peringkat',
+                                    textColorPrimary,
+                                    isDarkMode, onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const LeaderboardScreen()));
+                                }),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.vpn_key_outlined,
+                                    'Ganti Password',
+                                    textColorPrimary,
+                                    isDarkMode,
+                                    onTap: _tampilkanDialogGantiPassword),
+                              ],
+                            ),
                           ),
-                          _buildMenuDivider(),
-                          _buildMenuItem(
-                            Icons.logout, 
-                            'Keluar', 
-                            textColor: Colors.red, 
-                            iconColor: Colors.red,
-                            onTap: _logout,
+                          const SizedBox(height: 24),
+
+                          // --- MENU PENGATURAN ---
+                          Container(
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Column(
+                              children: [
+                                // Switch Dark/Light Mode
+                                SwitchListTile(
+                                  title: Text(
+                                    isDarkMode ? 'Mode Gelap' : 'Mode Terang',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: textColorPrimary,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                  secondary: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF3B82F6)
+                                          .withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                        isDarkMode
+                                            ? Icons.dark_mode
+                                            : Icons.light_mode,
+                                        color: const Color(0xFF3B82F6),
+                                        size: 20),
+                                  ),
+                                  value: isDarkMode,
+                                  activeColor: const Color(0xFF2563EB),
+                                  onChanged: (val) {
+                                    ThemeProvider().toggleTheme(val);
+                                  },
+                                ),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.support_agent,
+                                    'Pusat Bantuan',
+                                    textColorPrimary,
+                                    isDarkMode, onTap: () {
+                                  _tampilkanDialogInfo('Pusat Bantuan',
+                                      'Punya kendala? Hubungi tim kami via Email:\nsupport@titikkumpul.com\n\nAtau WhatsApp:\n+62 812-3456-7890');
+                                }),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.privacy_tip_outlined,
+                                    'Kebijakan Privasi',
+                                    textColorPrimary,
+                                    isDarkMode, onTap: () {
+                                  _tampilkanDialogInfo('Kebijakan Privasi',
+                                      'Kami menjaga privasi Anda. Data profil hanya dibagikan kepada pengguna yang berada di dalam grup olahraga yang sama dengan Anda.\n\nKata sandi dienkripsi dengan standar tinggi oleh Supabase.');
+                                }),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.notifications_none_outlined,
+                                    'Pengaturan Notifikasi',
+                                    textColorPrimary,
+                                    isDarkMode,
+                                    onTap: _tampilkanPengaturanNotifikasi),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                    Icons.cleaning_services_outlined,
+                                    'Clear Cache',
+                                    const Color(0xFF2563EB),
+                                    isDarkMode,
+                                    iconColor: const Color(0xFF2563EB),
+                                    hideChevron: true, onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content:
+                                            Text('Cache berhasil dibersihkan')),
+                                  );
+                                }),
+                                _buildMenuDivider(isDarkMode),
+                                _buildMenuItem(
+                                  Icons.logout,
+                                  'Keluar',
+                                  Colors.red,
+                                  isDarkMode,
+                                  iconColor: Colors.red,
+                                  onTap: _logout,
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(height: 32),
+
+                          // --- VERSI APP ---
+                          Text(
+                            'Versi App v1.0.0 (Build 51)',
+                            style: TextStyle(
+                                fontSize: 14, color: textColorSecondary),
+                          ),
+                          const SizedBox(height: 24),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
-
-                    // --- VERSI APP ---
-                    const Text(
-                      'Versi App v1.0.0 (Build 51)',
-                      style: TextStyle(fontSize: 14, color: Colors.white38),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-      ),
-    );
+            ),
+          );
+        });
   }
 
   // Widget helper untuk statistik angka
-  Widget _buildStatItem(String value, String label, {Color? valueColor}) {
+  Widget _buildStatItem(String value, String label,
+      {Color? valueColor, required bool isDarkMode}) {
     return Column(
       children: [
         Text(
           value,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: valueColor ?? Colors.white),
+          style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: valueColor ?? Colors.white),
         ),
         const SizedBox(height: 6),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+              fontSize: 11, color: Colors.white70, fontWeight: FontWeight.w500),
           textAlign: TextAlign.center,
         ),
       ],
@@ -597,16 +806,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Widget helper untuk garis pemisah antar stat
-  Widget _buildDivider() {
+  Widget _buildDivider(bool isDarkStat, bool isDarkMode) {
     return Container(
       height: 40,
       width: 1,
-      color: Colors.white24,
+      color: isDarkStat
+          ? Colors.white24
+          : (isDarkMode ? Colors.white10 : Colors.grey.withOpacity(0.2)),
     );
   }
 
   // Widget helper untuk item list menu
-  Widget _buildMenuItem(IconData icon, String title, {Color? textColor, Color? iconColor, bool hideChevron = false, required VoidCallback onTap}) {
+  Widget _buildMenuItem(
+      IconData icon, String title, Color textColor, bool isDarkMode,
+      {Color? iconColor,
+      bool hideChevron = false,
+      required VoidCallback onTap}) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
@@ -614,27 +829,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: (iconColor ?? const Color(0xFF3B82F6)).withOpacity(0.15),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: iconColor ?? const Color(0xFF3B82F6), size: 20),
+        child:
+            Icon(icon, color: iconColor ?? const Color(0xFF3B82F6), size: 20),
       ),
       title: Text(
         title,
         style: TextStyle(
           fontSize: 15,
-          color: textColor ?? Colors.white,
+          color: textColor,
           fontWeight: FontWeight.w600,
         ),
       ),
-      trailing: hideChevron ? null : const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.white38),
+      trailing: hideChevron
+          ? null
+          : Icon(Icons.arrow_forward_ios_rounded,
+              size: 14, color: isDarkMode ? Colors.white38 : Colors.black26),
       onTap: onTap,
     );
   }
 
   // Widget helper untuk garis antar menu di dalam card
-  Widget _buildMenuDivider() {
-    return const Divider(
+  Widget _buildMenuDivider(bool isDarkMode) {
+    return Divider(
       height: 1,
       thickness: 1,
-      color: Colors.white10,
+      color: isDarkMode ? Colors.white10 : Colors.grey.withOpacity(0.2),
       indent: 56,
       endIndent: 16,
     );

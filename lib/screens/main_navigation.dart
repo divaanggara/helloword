@@ -32,6 +32,7 @@ class _MainNavigationState extends State<MainNavigation> {
       
       // 🛠️ CONFIG BOTTOM NAV BAR 
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
@@ -39,8 +40,8 @@ class _MainNavigationState extends State<MainNavigation> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF2D6A4F), // Warna hijau saat diklik
-        unselectedItemColor: Colors.grey, // Abu-abu saat pasif
+        selectedItemColor: const Color(0xFF2563EB), // Warna biru dari theme
+        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), // Abu-abu dinamis
         showUnselectedLabels: true,
         selectedFontSize: 12,
         unselectedFontSize: 12,

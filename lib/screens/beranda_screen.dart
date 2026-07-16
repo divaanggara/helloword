@@ -196,9 +196,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              backgroundColor: const Color(0xFF1E293B),
+              backgroundColor: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              title: const Text('Pengaturan Profil', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              title: Text('Pengaturan Profil', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -210,8 +210,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         backgroundColor: const Color(0xFF334155),
                         backgroundImage: tempAvatarUrl != null && tempAvatarUrl!.isNotEmpty ? NetworkImage(tempAvatarUrl!) : null,
                         child: isUploading 
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : (tempAvatarUrl == null || tempAvatarUrl!.isEmpty ? const Icon(Icons.person, size: 45, color: Colors.white) : null),
+                            ? CircularProgressIndicator(color: Theme.of(context).colorScheme.onSurface)
+                            : (tempAvatarUrl == null || tempAvatarUrl!.isEmpty ? Icon(Icons.person, size: 45, color: Theme.of(context).colorScheme.onSurface) : null),
                       ),
                       if (!isUploading)
                         GestureDetector(
@@ -225,20 +225,20 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           },
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: Color(0xFF2563EB), shape: BoxShape.circle),
-                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                            decoration: BoxDecoration(color: Color(0xFF2563EB), shape: BoxShape.circle),
+                            child: Icon(Icons.camera_alt, color: Theme.of(context).colorScheme.onSurface, size: 18),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   TextField(
                     controller: nameController, 
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     decoration: InputDecoration(
                       labelText: 'Nama Lengkap', 
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.white24)),
+                      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.70)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.24))),
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFF2563EB))),
                     ), 
                     enabled: !isUploading,
@@ -246,7 +246,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                 ],
               ),
               actions: [
-                TextButton(onPressed: isUploading ? null : () => Navigator.pop(context), child: const Text('Batal', style: TextStyle(color: Colors.white54))),
+                TextButton(onPressed: isUploading ? null : () => Navigator.pop(context), child: Text('Batal', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54)))),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2563EB),
@@ -270,7 +270,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal Update Profil: $e'), backgroundColor: Colors.red));
                     }
                   },
-                  child: const Text('Simpan', style: TextStyle(color: Colors.white)),
+                  child: Text('Simpan', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
                 ),
               ],
             );
@@ -310,10 +310,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
       height: 24,
       child: Stack(
         children: [
-          const Positioned(left: 0, child: CircleAvatar(radius: 12, backgroundColor: Colors.redAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
-          const Positioned(left: 15, child: CircleAvatar(radius: 12, backgroundColor: Colors.blueAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
-          const Positioned(left: 30, child: CircleAvatar(radius: 12, backgroundColor: Colors.greenAccent, child: Icon(Icons.person, size: 14, color: Colors.white))),
-          Positioned(left: 45, child: CircleAvatar(radius: 12, backgroundColor: const Color(0xFF2563EB), child: Text('+$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
+          Positioned(left: 0, child: CircleAvatar(radius: 12, backgroundColor: Colors.redAccent, child: Icon(Icons.person, size: 14, color: Theme.of(context).colorScheme.onSurface))),
+          Positioned(left: 15, child: CircleAvatar(radius: 12, backgroundColor: Colors.blueAccent, child: Icon(Icons.person, size: 14, color: Theme.of(context).colorScheme.onSurface))),
+          Positioned(left: 30, child: CircleAvatar(radius: 12, backgroundColor: Colors.greenAccent, child: Icon(Icons.person, size: 14, color: Theme.of(context).colorScheme.onSurface))),
+          Positioned(left: 45, child: CircleAvatar(radius: 12, backgroundColor: const Color(0xFF2563EB), child: Text('+$count', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 10, fontWeight: FontWeight.bold)))),
         ],
       ),
     );
@@ -324,7 +324,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -337,18 +337,18 @@ class _BerandaScreenState extends State<BerandaScreen> {
           builder: (context, scrollController) {
             return Column(
               children: [
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Container(
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white24,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.24),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(height: 16),
-                const Text('Semua Kategori Olahraga', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
+                Text('Semua Kategori Olahraga', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)),
+                SizedBox(height: 16),
                 Expanded(
                   child: ListView.builder(
                     controller: scrollController,
@@ -367,8 +367,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               ? Image.network(grup['icon_url'], fit: BoxFit.cover, width: 24, height: 24, errorBuilder: (c,e,s) => Icon(_getIconGrup(grup['nama_grup']), color: _getWarnaGrup(grup['id'])))
                               : Icon(_getIconGrup(grup['nama_grup']), color: _getWarnaGrup(grup['id'])),
                         ),
-                        title: Text(grup['nama_grup'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                        trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+                        title: Text(grup['nama_grup'], style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                        trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54)),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
@@ -411,7 +411,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B101E), // Dark Background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Dark Background
       body: SafeArea(
         child: Column(
           children: [
@@ -426,9 +426,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       children: [
                         CircleAvatar(
                           radius: 22,
-                          backgroundColor: const Color(0xFF1E293B),
+                          backgroundColor: Theme.of(context).colorScheme.surface,
                           backgroundImage: _avatarUrl != null && _avatarUrl!.isNotEmpty ? NetworkImage(_avatarUrl!) : null,
-                          child: _avatarUrl == null || _avatarUrl!.isEmpty ? const Icon(Icons.person, color: Colors.white, size: 24) : null,
+                          child: _avatarUrl == null || _avatarUrl!.isEmpty ? Icon(Icons.person, color: Theme.of(context).colorScheme.onSurface, size: 24) : null,
                         ),
                         Positioned(
                           right: 0,
@@ -439,32 +439,32 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF22C55E),
                               shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFF0B101E), width: 2),
+                              border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
                             ),
                           ),
                         )
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Halo, 👋', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                        Text('Halo, 👋', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.70), fontSize: 13, fontWeight: FontWeight.w500)),
                         Row(
                           children: [
                             Flexible(
                               child: Text(
                                 _namaUser.contains('!') ? _namaUser : '$_namaUser!', 
-                                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             if (_totalPoints >= 1000) ...[
-                              const SizedBox(width: 6),
-                              const Icon(Icons.workspace_premium, color: Colors.amber, size: 20),
+                              SizedBox(width: 6),
+                              Icon(Icons.workspace_premium, color: Colors.amber, size: 20),
                             ]
                           ],
                         ),
@@ -481,7 +481,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             margin: const EdgeInsets.only(right: 6),
                             decoration: BoxDecoration(color: Colors.amber.withOpacity(0.15), shape: BoxShape.circle),
                             child: IconButton(
-                              icon: const Icon(Icons.admin_panel_settings, color: Colors.amber, size: 22),
+                              icon: Icon(Icons.admin_panel_settings, color: Colors.amber, size: 22),
                               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminPanelScreen())),
                             ),
                           ),
@@ -492,7 +492,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           margin: const EdgeInsets.only(right: 6),
                           decoration: BoxDecoration(color: const Color(0xFF2563EB).withOpacity(0.2), shape: BoxShape.circle),
                           child: IconButton(
-                            icon: const Icon(Icons.history_rounded, color: Color(0xFF3B82F6), size: 22), 
+                            icon: Icon(Icons.history_rounded, color: Color(0xFF3B82F6), size: 22), 
                             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyEventsScreen())),
                           ),
                         ),
@@ -502,7 +502,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                         child: Container(
                           decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.15), shape: BoxShape.circle),
                           child: IconButton(
-                            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+                            icon: Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
                             onPressed: () async {
                               await Supabase.instance.client.auth.signOut();
                               if (!mounted) return;
@@ -524,7 +524,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
             // 📜 KONTEN UTAMA SCROLLABLE
             Expanded(
               child: _isLoading 
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)))
+                ? Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)))
                 : SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: Column(
@@ -538,31 +538,31 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               Expanded(
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF131B2F),
+                                    color: Theme.of(context).colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.white10),
+                                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.10)),
                                   ),
                                   child: TextField(
                                     controller: _searchController,
-                                    style: const TextStyle(fontSize: 14, color: Colors.white),
-                                    decoration: const InputDecoration(
+                                    style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
+                                    decoration: InputDecoration(
                                       hintText: 'Cari kegiatan olahraga, grup, atau teman...',
-                                      hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
-                                      prefixIcon: Icon(Icons.search_rounded, color: Colors.white54, size: 20),
+                                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38), fontSize: 13),
+                                      prefixIcon: Icon(Icons.search_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54), size: 20),
                                       border: InputBorder.none,
                                       contentPadding: EdgeInsets.symmetric(vertical: 14),
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               Container(
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF2563EB),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: IconButton(
-                                  icon: const Icon(Icons.groups_rounded, color: Colors.white, size: 20),
+                                  icon: Icon(Icons.groups_rounded, color: Theme.of(context).colorScheme.onSurface, size: 20),
                                   onPressed: () {
                                     Navigator.push(
                                       context, 
@@ -574,7 +574,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
 
                         // 🏀 KATEGORI OLAHRAGA
                         Padding(
@@ -582,10 +582,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Kategori Olahraga', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3)),
+                              Text('Kategori Olahraga', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface, letterSpacing: -0.3)),
                               GestureDetector(
                                 onTap: _tampilkanSemuaGrup,
-                                child: const Row(
+                                child: Row(
                                   children: [
                                     Text('Lihat Semua', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF3B82F6))),
                                     Icon(Icons.chevron_right, color: Color(0xFF3B82F6), size: 16)
@@ -595,7 +595,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         SizedBox(
                           height: 90,
                           child: ListView.builder(
@@ -630,7 +630,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                     decoration: BoxDecoration(
                                       color: bgColor,
                                       borderRadius: BorderRadius.circular(16),
-                                      border: isSelected ? null : Border.all(color: Colors.white10),
+                                      border: isSelected ? null : Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.10)),
                                     ),
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
@@ -654,7 +654,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                 color: iconColor,
                                                 size: 28,
                                               ),
-                                        const SizedBox(height: 8),
+                                        SizedBox(height: 8),
                                         Text(
                                           grup['nama_grup'].split(' ')[0], 
                                           style: TextStyle(
@@ -673,16 +673,16 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(width: 16, height: 4, decoration: BoxDecoration(color: const Color(0xFF2563EB), borderRadius: BorderRadius.circular(2))),
-                            const SizedBox(width: 4),
-                            Container(width: 16, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+                            SizedBox(width: 4),
+                            Container(width: 16, height: 4, decoration: BoxDecoration(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.24), borderRadius: BorderRadius.circular(2))),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
 
                         // 🌟 UNGGULAN MINGGU INI (MENGAMBIL DARI TABEL EVENTS)
                         if (eventUnggulan != null) ...[
@@ -691,10 +691,10 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Unggulan Minggu Ini 🔥', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3)),
+                                Text('Unggulan Minggu Ini 🔥', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface, letterSpacing: -0.3)),
                                 GestureDetector(
                                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UserEventScreen())),
-                                  child: const Row(
+                                  child: Row(
                                     children: [
                                       Text('Lihat Semua', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF3B82F6))),
                                       Icon(Icons.chevron_right, color: Color(0xFF3B82F6), size: 16)
@@ -704,7 +704,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           GestureDetector(
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const UserEventScreen())),
                             child: Container(
@@ -713,7 +713,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               height: 180,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white12),
+                                border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.12)),
                                 image: DecorationImage(
                                   image: eventUnggulan['image_url'] != null && eventUnggulan['image_url'].toString().isNotEmpty
                                       ? NetworkImage(eventUnggulan['image_url']) 
@@ -741,13 +741,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                           decoration: BoxDecoration(color: const Color(0xFF22C55E), borderRadius: BorderRadius.circular(12)),
-                                          child: const Text('POPULER', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                          child: Text('POPULER', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 10, fontWeight: FontWeight.bold)),
                                         ),
-                                        const SizedBox(width: 8),
+                                        SizedBox(width: 8),
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white38)),
-                                          child: const Text('5 SLOT TERSISA', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                          decoration: BoxDecoration(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2), borderRadius: BorderRadius.circular(12), border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38))),
+                                          child: Text('5 SLOT TERSISA', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 10, fontWeight: FontWeight.bold)),
                                         ),
                                       ],
                                     ),
@@ -756,45 +756,45 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                       children: [
                                         Text(
                                           eventUnggulan['title'] ?? 'Event Kalcer',
-                                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, height: 1.2),
+                                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.w800, height: 1.2),
                                         ),
-                                        const SizedBox(height: 6),
+                                        SizedBox(height: 6),
                                         Row(
                                           children: [
-                                            const Icon(Icons.location_on_outlined, color: Colors.white70, size: 14),
-                                            const SizedBox(width: 4),
+                                            Icon(Icons.location_on_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.70), size: 14),
+                                            SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
                                                 eventUnggulan['location'] ?? 'GBK Arena, Jakarta Pusat',
-                                                style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.70), fontSize: 12, fontWeight: FontWeight.w500),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 4),
+                                        SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            const Icon(Icons.calendar_today_outlined, color: Colors.white70, size: 14),
-                                            const SizedBox(width: 4),
+                                            Icon(Icons.calendar_today_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.70), size: 14),
+                                            SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
                                                 '${eventUnggulan['date'] != null ? DateTime.parse(eventUnggulan['date']).toString().split(' ')[0] : 'Sabtu'}, 20:00 WIB',
-                                                style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.70), fontSize: 12, fontWeight: FontWeight.w500),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 12),
+                                        SizedBox(height: 12),
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             Row(
                                               children: [
                                                 _buildDummyAvatarStack(count: 23),
-                                                const SizedBox(width: 8),
-                                                const Text('32 peserta sudah bergabung', style: TextStyle(color: Colors.white54, fontSize: 10)),
+                                                SizedBox(width: 8),
+                                                Text('32 peserta sudah bergabung', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54), fontSize: 10)),
                                               ],
                                             ),
                                             Container(
@@ -803,11 +803,11 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                 color: const Color(0xFF2563EB),
                                                 borderRadius: BorderRadius.circular(20),
                                               ),
-                                              child: const Row(
+                                              child: Row(
                                                 children: [
-                                                  Text('Ikut Sekarang', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                                                  Text('Ikut Sekarang', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 12, fontWeight: FontWeight.bold)),
                                                   SizedBox(width: 4),
-                                                  Icon(Icons.arrow_forward, color: Colors.white, size: 14),
+                                                  Icon(Icons.arrow_forward, color: Theme.of(context).colorScheme.onSurface, size: 14),
                                                 ],
                                               ),
                                             )
@@ -820,17 +820,17 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(height: 32),
                         ],
 
                         // 📍 KEGIATAN TERDEKAT / EVENT LAINNYA 
                         if (sisaEvent.isNotEmpty) ...[
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.symmetric(horizontal: 20),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Kegiatan Terdekat', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.3)),
+                                Text('Kegiatan Terdekat', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface, letterSpacing: -0.3)),
                                 Row(
                                   children: [
                                     Icon(Icons.location_on_outlined, color: Color(0xFF3B82F6), size: 14),
@@ -842,7 +842,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
@@ -865,7 +865,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                     boxShadow: [
                                       BoxShadow(color: const Color(0xFF1E6091).withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
                                     ],
-                                    border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+                                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.15), width: 1),
                                   ),
                                   child: Row(
                                     children: [
@@ -873,9 +873,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                         borderRadius: BorderRadius.circular(14),
                                         child: ev['image_url'] != null && ev['image_url'].toString().isNotEmpty
                                           ? Image.network(ev['image_url'], width: 90, height: 90, fit: BoxFit.cover)
-                                          : Container(width: 90, height: 90, color: const Color(0xFF1E293B), child: const Icon(Icons.sports_soccer, color: Colors.white54, size: 32)),
+                                          : Container(width: 90, height: 90, color: Theme.of(context).colorScheme.surface, child: Icon(Icons.sports_soccer, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54), size: 32)),
                                       ),
-                                      const SizedBox(width: 16),
+                                      SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -886,53 +886,53 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                 Container(
                                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                                   decoration: BoxDecoration(
-                                                    color: Colors.white.withOpacity(0.2), 
+                                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2), 
                                                     borderRadius: BorderRadius.circular(12),
-                                                    border: Border.all(color: Colors.white38, width: 0.5)
+                                                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38), width: 0.5)
                                                   ),
-                                                  child: const Text('BASKET', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                                                  child: Text('BASKET', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                                                 ),
                                                 Container(
                                                   padding: const EdgeInsets.all(6),
-                                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
-                                                  child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 12),
+                                                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1), shape: BoxShape.circle),
+                                                  child: Icon(Icons.arrow_forward_ios_rounded, color: Theme.of(context).colorScheme.onSurface, size: 12),
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: 8),
+                                            SizedBox(height: 8),
                                             Text(
                                               ev['title'] ?? 'Event Olahraga',
-                                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white, height: 1.2),
+                                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Theme.of(context).colorScheme.onSurface, height: 1.2),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
-                                            const SizedBox(height: 6),
+                                            SizedBox(height: 6),
                                             Row(
                                               children: [
-                                                const Icon(Icons.location_on_rounded, size: 14, color: Colors.amberAccent),
-                                                const SizedBox(width: 4),
+                                                Icon(Icons.location_on_rounded, size: 14, color: Colors.amberAccent),
+                                                SizedBox(width: 4),
                                                 Expanded(
                                                   child: Text(
                                                     ev['location'] ?? 'Lokasi Belum Ditentukan', 
-                                                    style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w500), 
+                                                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.70), fontWeight: FontWeight.w500), 
                                                     overflow: TextOverflow.ellipsis
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: 10),
+                                            SizedBox(height: 10),
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Expanded(
                                                   child: Row(
                                                     children: [
-                                                      const Icon(Icons.access_time_rounded, size: 14, color: Colors.white54),
-                                                      const SizedBox(width: 4),
+                                                      Icon(Icons.access_time_rounded, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54)),
+                                                      SizedBox(width: 4),
                                                       Expanded(
                                                         child: Text(
                                                           '${ev['date'] != null ? DateTime.parse(ev['date']).toString().split(' ')[0] : 'Besok'}, 19:00', 
-                                                          style: const TextStyle(fontSize: 11, color: Colors.white54, fontWeight: FontWeight.bold),
+                                                          style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.54), fontWeight: FontWeight.bold),
                                                           overflow: TextOverflow.ellipsis,
                                                         ),
                                                       ),
@@ -951,7 +951,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                               );
                             },
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                         ],
 
                         // 🏆 PAPAN PERINGKAT
@@ -959,9 +959,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xFF131B2F),
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white10),
+                              border: Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.10)),
                             ),
                             padding: const EdgeInsets.all(20),
                             child: Column(
@@ -971,12 +971,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Yang lagi paling aktif',
                                       style: TextStyle(
                                         fontSize: 17,
                                         fontWeight: FontWeight.w800,
-                                        color: Colors.white,
+                                        color: Theme.of(context).colorScheme.onSurface,
                                         letterSpacing: -0.3,
                                       ),
                                     ),
@@ -985,7 +985,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                         context,
                                         MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
                                       ),
-                                      child: const Row(
+                                      child: Row(
                                         children: [
                                           Text('Lihat ranking', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFFEF4444))),
                                           SizedBox(width: 4),
@@ -995,7 +995,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 14),
+                                SizedBox(height: 14),
 
                                 // Filter Tabs
                                 Row(
@@ -1014,7 +1014,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                         decoration: BoxDecoration(
                                           color: isSelected ? const Color(0xFFEF4444) : const Color(0xFF1E293B),
                                           borderRadius: BorderRadius.circular(20),
-                                          border: isSelected ? null : Border.all(color: Colors.white12),
+                                          border: isSelected ? null : Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.12)),
                                         ),
                                         child: Text(
                                           labels[i],
@@ -1028,19 +1028,19 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                     );
                                   }),
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: 16),
 
                                 // List
                                 _isLoadingRanking
-                                  ? const Center(child: Padding(
+                                  ? Center(child: Padding(
                                       padding: EdgeInsets.all(20.0),
                                       child: CircularProgressIndicator(color: Color(0xFFEF4444)),
                                     ))
                                   : _topPlayers.isEmpty
-                                    ? const Center(
+                                    ? Center(
                                         child: Padding(
                                           padding: EdgeInsets.all(16.0),
-                                          child: Text('Belum ada data', style: TextStyle(color: Colors.white38)),
+                                          child: Text('Belum ada data', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38))),
                                         ),
                                       )
                                     : Column(
@@ -1054,7 +1054,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                           final rankColor = isFirst
                                               ? const Color(0xFFF59E0B)
                                               : const Color(0xFF1E293B);
-                                          final rankBorder = isFirst ? null : Border.all(color: Colors.white12);
+                                          final rankBorder = isFirst ? null : Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.12));
 
                                           return Container(
                                             margin: const EdgeInsets.only(bottom: 10),
@@ -1066,7 +1066,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                               borderRadius: BorderRadius.circular(14),
                                               border: isFirst
                                                   ? Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3))
-                                                  : Border.all(color: Colors.white.withOpacity(0.05)),
+                                                  : Border.all(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.05)),
                                             ),
                                             child: Row(
                                               children: [
@@ -1089,7 +1089,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                     ),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 12),
+                                                SizedBox(width: 12),
 
                                                 // Avatar
                                                 CircleAvatar(
@@ -1099,11 +1099,11 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                   child: avatarUrl.isEmpty
                                                       ? Text(
                                                           nama.isNotEmpty ? nama[0].toUpperCase() : '?',
-                                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold),
                                                         )
                                                       : null,
                                                 ),
-                                                const SizedBox(width: 12),
+                                                SizedBox(width: 12),
 
                                                 // Name & Subtitle
                                                 Expanded(
@@ -1112,17 +1112,17 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                     children: [
                                                       Text(
                                                         nama,
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
+                                                        style: TextStyle(
+                                                          color: Theme.of(context).colorScheme.onSurface,
                                                           fontWeight: FontWeight.w700,
                                                           fontSize: 14,
                                                         ),
                                                         overflow: TextOverflow.ellipsis,
                                                       ),
-                                                      const SizedBox(height: 2),
+                                                      SizedBox(height: 2),
                                                       Text(
                                                         '$points aktivitas selesai',
-                                                        style: const TextStyle(color: Colors.white38, fontSize: 12),
+                                                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38), fontSize: 12),
                                                       ),
                                                     ],
                                                   ),
@@ -1134,13 +1134,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                   children: [
                                                     Text(
                                                       '$points',
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                         color: Color(0xFFEF4444),
                                                         fontWeight: FontWeight.w800,
                                                         fontSize: 18,
                                                       ),
                                                     ),
-                                                    const Text(
+                                                    Text(
                                                       'XP',
                                                       style: TextStyle(color: Color(0xFFEF4444), fontSize: 11, fontWeight: FontWeight.w600),
                                                     ),
@@ -1155,7 +1155,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
 
                         // 📣 BANNER AYO BUAT TIM
 
@@ -1179,13 +1179,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text('Ayo Buat Tim!', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 8),
+                              Text('Ayo Buat Tim!', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.w800)),
+                              SizedBox(height: 8),
                               Text(
                                 'Mulai kegiatan olahragamu sendiri dan\ntemukan teman baru.',
-                                style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13, height: 1.4),
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.9), fontSize: 13, height: 1.4),
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20),
                               ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
@@ -1197,13 +1197,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                 onPressed: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => const MyEventsScreen()));
                                 },
-                                label: const Text('Buat Event', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                icon: const Icon(Icons.add_circle, size: 18),
+                                label: Text('Buat Event', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                icon: Icon(Icons.add_circle, size: 18),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: 32),
                       ],
                     ),
                   ),

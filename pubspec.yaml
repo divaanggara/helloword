@@ -3,7 +3,7 @@ description: "A new Flutter project for Titik Kumpul Application."
 
 publish_to: 'none' 
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -21,6 +21,7 @@ dependencies:
   flutter_dotenv: ^6.0.1
   flutter_map: ^8.3.0
   latlong2: ^0.9.1
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
